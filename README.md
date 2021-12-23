@@ -1,4 +1,4 @@
-# ❤️ A Toolkit for Document-level Event Extraction with & without Triggers aaaaa
+# ❤️ A Toolkit for Document-level Event Extraction with & without Triggers
 
 ![Build](https://github.com/Spico197/DocEE/workflows/DocEE/badge.svg?branch=main)
 ![Coverage](https://img.shields.io/codecov/c/github/Spico197/DocEE)
