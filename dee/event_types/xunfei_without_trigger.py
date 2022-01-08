@@ -67,7 +67,7 @@ class event_0(BaseEvent):
 	NAME = 'test'
 	FIELDS   = ['time','object','loc','subject']
 	TRIGGERS = {1: ['subject'],
-   2: ['subject','time'],
+   2: ['object','time'],
    3: ['object','time','subject'],
    4: ['object','loc','time','subject']}
 
