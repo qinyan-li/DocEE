@@ -253,6 +253,12 @@ class DEETaskSetting(TaskSetting):
             self.test_file_name = "luge_dev_with_trigger.json"
             self.inference_file_name = "luge_submit_with_trigger.json"
             self.doc_lang = "zh"
+        elif self.run_mode == "zofund_with_trigger":
+            self.train_file_name = "zofund_train_with_trigger.json"
+            self.dev_file_name = "zofund_dev_with_trigger.json"
+            self.test_file_name = "zofund_dev_with_trigger.json"
+            self.inference_file_name = "zofund_submit_with_trigger.json"
+            self.doc_lang = "zh"
         else:
             raise ValueError(f"run_mode: {self.run_mode} is not supported")
         if isinstance(self.filtered_data_types, str):

@@ -550,6 +550,7 @@ class RegexEntExtractor(object):
             "HighestTradingPrice": "money",
             "LowestTradingPrice": "money",
             "AveragePrice": "money",
+            # Duee-fin
             # shares
             "质押股票/股份数量": "share",
             "回购股份数量": "share",
@@ -580,6 +581,29 @@ class RegexEntExtractor(object):
             "市值": "money",
             "融资金额": "money",
             "净亏损": "money",
+
+            # ccks
+            # shares    
+            # ratio
+            # date
+            "案发时间": "date",
+            "裁定时间": "date",
+            "公告时间": "date",
+            "减持开始日期": "date",
+            "质押结束日期": "date",
+            "质押开始日期": "date",
+            "增持开始日期": "date",
+            "冻结结束日期": "date",
+            "冻结开始日期": "date",
+            "死亡/失联时间": "date",
+            # money
+            "资损金额": "money",
+            "损失金额": "money",
+            "减持金额": "money",
+            "质押金额": "money",
+            "增持金额": "money",
+            "冻结金额": "money",
+            "赔付金额": "money",
         }
         self.field_id2field_name = {}
         self.basic_type_id = None  # id of `O` label
