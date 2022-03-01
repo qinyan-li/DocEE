@@ -220,6 +220,7 @@ class DEETaskSetting(TaskSetting):
             self.train_file_name = "typed_train.json"
             self.dev_file_name = "typed_dev.json"
             self.test_file_name = "typed_test.json"
+            self.inference_file_name =  "typed_test.json"
             self.doc_lang = "zh"
         elif self.run_mode == "half":
             self.train_file_name = "typed_train_1o2.json"
@@ -245,7 +246,15 @@ class DEETaskSetting(TaskSetting):
             self.train_file_name = "luge_train_without_trigger.json"
             self.dev_file_name = "luge_dev_without_trigger.json"
             self.test_file_name = "luge_dev_without_trigger.json"
-            self.inference_file_name = "luge_submit_without_trigger.json"
+            #self.inference_file_name = "luge_submit_without_trigger.json"
+            self.inference_file_name = "luge_dev_without_trigger.json"
+            self.doc_lang = "zh"
+        elif self.run_mode == "luge_without_trigger_short":
+            self.train_file_name = "luge_train_without_trigger_short.json"
+            self.dev_file_name = "luge_dev_without_trigger_short.json"
+            self.test_file_name = "luge_dev_without_trigger_short.json"
+            self.inference_file_name = "luge_submit_without_trigger_short.json"
+            #self.inference_file_name = "luge_dev_without_trigger.json"
             self.doc_lang = "zh"
         elif self.run_mode == "luge_with_trigger":
             self.train_file_name = "luge_train_with_trigger.json"
@@ -253,12 +262,49 @@ class DEETaskSetting(TaskSetting):
             self.test_file_name = "luge_dev_with_trigger.json"
             self.inference_file_name = "luge_submit_with_trigger.json"
             self.doc_lang = "zh"
-        elif self.run_mode == "zofund_with_trigger":
-            self.train_file_name = "zofund_train_with_trigger.json"
-            self.dev_file_name = "zofund_dev_with_trigger.json"
-            self.test_file_name = "zofund_dev_with_trigger.json"
-            self.inference_file_name = "zofund_submit_with_trigger.json"
+        elif self.run_mode == "news_without_trigger":
+            self.train_file_name = "luge_train_without_trigger.json"
+            self.dev_file_name = "luge_dev_without_trigger.json"
+            self.test_file_name = "luge_dev_without_trigger.json"
+            self.inference_file_name = "news_submit_without_trigger.json"
             self.doc_lang = "zh"
+        elif self.run_mode == 'ccks2020_without_trigger':
+            self.train_file_name = 'ccks2020_train_without_trigger.json'
+            self.dev_file_name = 'ccks2020_dev_without_trigger.json'
+            self.test_file_name = 'ccks2020_submit_without_trigger.json'
+            self.inference_file_name = 'ccks2020_submit_without_trigger.json'
+            self.doc_lang = 'zh'
+        elif self.run_mode == 'ccks2021_without_trigger':
+            self.train_file_name = 'ccks2021_train_without_trigger.json'
+            self.dev_file_name = 'ccks2021_dev_without_trigger.json'
+            self.test_file_name = 'ccks2021_dev_without_trigger.json'
+            self.inference_file_name = 'ccks2021_submit_without_trigger.json'
+            self.doc_lang = 'zh'
+        elif self.run_mode == 'xunfei_without_trigger':
+            self.train_file_name = 'xunfei_train_without_trigger.json'
+            self.dev_file_name = 'xunfei_dev_without_trigger.json'
+            self.test_file_name = 'xunfei_submit_without_trigger.json'
+            self.inference_file_name = 'xunfei_submit_without_trigger.json'
+            self.doc_lang = 'zh'
+            
+        elif self.run_mode == "zofund_without_trigger":
+            self.train_file_name = "zofund_train_without_trigger.json"
+            self.dev_file_name = "zofund_dev_without_trigger.json"
+            self.test_file_name = "zofund_submit_without_trigger.json"
+            self.inference_file_name = "zofund_submit_without_trigger.json"
+            self.doc_lang = "zh"
+        elif self.run_mode == "zofund_without_trigger_double":
+            self.train_file_name = "zofund_train_without_trigger_double.json"
+            self.dev_file_name = "zofund_dev_without_trigger_double.json"
+            self.test_file_name = "zofund_submit_without_trigger_double.json"
+            self.inference_file_name = "zofund_submit_without_trigger_double.json"
+            self.doc_lang = "zh"
+        elif self.run_mode == 'ccks2020_without_trigger_one':
+            self.train_file_name = 'ccks2020_train_without_trigger_one.json'
+            self.dev_file_name = 'ccks2020_dev_without_trigger_one.json'
+            self.test_file_name = 'ccks2020_dev_without_trigger_one.json'
+            self.inference_file_name = 'ccks2020_submit_without_trigger_one.json'
+            self.doc_lang = 'zh'
         else:
             raise ValueError(f"run_mode: {self.run_mode} is not supported")
         if isinstance(self.filtered_data_types, str):
@@ -796,6 +842,7 @@ class DEETask(BasePytorchTask):
         dump_decode_pkl_name=None,
         dump_eval_json_name=None,
     ):
+        import json
         self.logging("=" * 20 + "Start Evaluation" + "=" * 20)
 
         if dump_decode_pkl_name is not None:
@@ -825,7 +872,161 @@ class DEETask(BasePytorchTask):
             self.logging("Dumping eval results into {}".format(dump_eval_json_path))
         else:
             dump_eval_json_path = None
+        '''       	       
+######################################################################################## TODO ################
+        total_info = total_event_decode_results
+        fn_splits = dump_eval_json_name.split(".")
+        if (
+           len(fn_splits) == 6
+        ):
+            _, data_type, span_type, model_str, epoch, _ = fn_splits
+            
+            if data_type == "dev":
+                features1 = self.dev_features
+                examples1 = self.dev_examples
+            elif data_type == "test":
+                features1 = self.test_features
+        
+                examples1 = self.test_examples
+        
+        self.logging(f"!!!!data type is {data_type}")
+       
+        self.logging(f"!!!!!!!!!!!!!!!! {len(examples1)}+{len(features1)}+{len(total_info)}")
+        
+        #assert (
+        #    len(examples)
+        #    == len(features)
+        #    == len(total_info)
+        #)
+        # example_list = self.inference_examples
+        # feature_list = self.inference_features
+        if (span_type!="gold_span" and data_type =="test"):
+            example_list = []
+            feature_list = []
+            for info in total_info:
+                example_list.append(examples1[info[0]])
+                feature_list.append(features1[info[0]])
+            dump_file_name = dump_eval_json_name.replace("dee_eval","dee_eval_result")
+            dump_file_path = dump_file_name #os.path.join(self.setting.output_dir, dump_file_name)
+            
+            if dump_file_path is not None:
+                with open(dump_file_path, "wt", encoding="utf-8") as fout:
+                    for example, doc_fea, result in zip(
+                        example_list, feature_list, total_info
+                    ):
+                        assert doc_fea.ex_idx == result[0]
 
+                        doc_id = doc_fea.guid
+                        event_list = []
+                        mspans = []
+                        event_types = []
+                        for eid, r in enumerate(result[1]):
+                            if r == 1:
+                                event_types.append(self.event_type_fields_pairs[eid][0])
+
+                        doc_arg_rel_info = result[3]
+                        mention_drange_list = doc_arg_rel_info.mention_drange_list
+                        mention_type_list = doc_arg_rel_info.mention_type_list
+                        doc_token_ids = doc_fea.doc_token_ids.detach().tolist()
+
+                        for drange, ment_type in zip(
+                            mention_drange_list, mention_type_list
+                        ):
+                            mspan = self.tokenizer.convert_ids_to_tokens(
+                                doc_token_ids[drange[0]][drange[1] : drange[2]]
+                            )
+                            if all(x.upper() != "[UNK]" for x in mspan):
+                                mspan = "".join(mspan)
+                                offset = int(self.feature_converter_func.include_cls)
+                                matched_drange = [
+                                    drange[0],
+                                    drange[1] - offset,
+                                    drange[2] - offset,
+                                ]
+                            else:
+                                mspan, matched_drange = match_arg(
+                                    example.sentences,
+                                    doc_fea.doc_token_ids.numpy(),
+                                    doc_token_ids[drange[0]][drange[1] : drange[2]],
+                                    offset=int(self.feature_converter_func.include_cls),
+                                )
+                            mtype = self.setting.tag_id2tag_name[ment_type][2:]
+                            t_mspan = {
+                                "mspan": mspan,
+                                "mtype": mtype,
+                                "drange": matched_drange,
+                            }
+                            if t_mspan not in mspans:
+                                mspans.append(t_mspan)
+
+                        for event_idx, events in enumerate(result[2]):
+                            if events is None:
+                                continue
+                            for ins in events:
+                                if all(x is None for x in ins):
+                                    continue
+                                tmp_ins = {
+                                    "event_type": self.event_template.event_type_fields_list[
+                                        event_idx
+                                    ][
+                                        0
+                                    ],
+                                    "arguments": None,
+                                }
+                                arguments = []
+                                for field_idx, args in enumerate(ins):
+                                    if args is None:
+                                        continue
+                                    if not isinstance(args, set):
+                                        args = {args}
+                                    for arg in args:
+                                        arg_tmp = self.tokenizer.convert_ids_to_tokens(arg)
+                                        if all(x.upper() != "[UNK]" for x in arg_tmp):
+                                            real_arg = "".join(arg_tmp)
+                                        else:
+                                            real_arg, _ = match_arg(
+                                                example.sentences,
+                                                doc_fea.doc_token_ids.numpy(),
+                                                arg,
+                                                offset=int(
+                                                    self.feature_converter_func.include_cls
+                                                ),
+                                            )
+                                            if real_arg is None:
+                                                self.logging(
+                                                    f"doc: {doc_id}, arg ({arg_tmp}) with UNK but original text not found",
+                                                    level=logging.WARNING,
+                                                )
+                                                real_arg = arg_tmp
+                                        arguments.append(
+                                            {
+                                                "role": self.event_template.event_type_fields_list[
+                                                    event_idx
+                                                ][
+                                                    1
+                                                ][
+                                                    field_idx
+                                                ],
+                                                "argument": real_arg,
+                                            }
+                                        )
+                                tmp_ins["arguments"] = arguments
+                                event_list.append(tmp_ins)
+
+                        doc_res = {
+                            "id": doc_id,
+                            "event_list": event_list,
+                            "comments": {
+                                "pred_types": event_types,
+                                "mspans": mspans,
+                                "sentences": example.sentences,
+                            },
+                        }
+                        fout.write(f"{json.dumps(doc_res, ensure_ascii=False)}\n")
+                        fout.flush()
+                self.logging(f"Results dumped to {dump_file_path}")
+########################################################################################
+        '''
         total_eval_res = measure_dee_prediction(
             self.event_type_fields_pairs,
             features,
@@ -1545,7 +1746,8 @@ class DEETask(BasePytorchTask):
             # append metrics from this batch to event_info
             if isinstance(batch_info, torch.Tensor):
                 total_info.append(
-                    batch_info.detach().cpu()  # collect results in cpu memory
+                    batch_info.to(torch.device("cpu"))
+                    #batch_info.detach().cpu()  # collect results in cpu memory
                 )
             else:
                 # batch_info is a list of some info on each example
@@ -1565,6 +1767,7 @@ class DEETask(BasePytorchTask):
         example_list = []
         feature_list = []
         for info in total_info:
+            self.logging(f"{info}")
             example_list.append(self.inference_examples[info[0]])
             feature_list.append(self.inference_features[info[0]])
 
@@ -1574,7 +1777,6 @@ class DEETask(BasePytorchTask):
                     example_list, feature_list, total_info
                 ):
                     assert doc_fea.ex_idx == result[0]
-
                     doc_id = doc_fea.guid
                     event_list = []
                     mspans = []
@@ -1622,6 +1824,7 @@ class DEETask(BasePytorchTask):
                         if events is None:
                             continue
                         for ins in events:
+                            self.logging(f"{doc_id}")
                             if all(x is None for x in ins):
                                 continue
                             tmp_ins = {
@@ -1671,7 +1874,72 @@ class DEETask(BasePytorchTask):
                                     )
                             tmp_ins["arguments"] = arguments
                             event_list.append(tmp_ins)
-
+		    ################################ print predicted matrix and combinations and all nodes ###############
+                    combi = []
+                    if len(result[5])>0:
+                        combinations = result[5][0]
+                        for combination in combinations: # qy: 对每个event 穷举每个comb。combinations = [(1, 3, 4, 5), (2, 5, 6)]
+                            c = []
+                            for i in combination:
+                                arg_tmp = self.tokenizer.convert_ids_to_tokens(doc_arg_rel_info.span_token_tup_list[i])
+                                if all(x.upper() != "[UNK]" for x in arg_tmp):
+                                    real_arg = "".join(arg_tmp)
+                                else:
+                                    real_arg, _ = match_arg(
+                                        example.sentences,
+                                        doc_fea.doc_token_ids.numpy(),
+                                        arg,
+                                        offset=int(
+                                            self.feature_converter_func.include_cls
+                                        ),
+                                    )
+                                    if real_arg is None:
+                                        self.logging(
+                                            f"doc: {doc_id}, arg ({arg_tmp}) with UNK but original text not found",
+                                            level=logging.WARNING,
+                                        )
+                                        real_arg = arg_tmp
+                                c.append(real_arg)
+                            combi.append(c)
+                    nodes = []
+                    graph = []
+                    for adj_mat in result[4]:
+                        for i in range(len(adj_mat)):
+                            arg_tmp = self.tokenizer.convert_ids_to_tokens(doc_arg_rel_info.span_token_tup_list[i])
+                            if all(x.upper() != "[UNK]" for x in arg_tmp):
+                                real_arg = "".join(arg_tmp)
+                            else:
+                                real_arg, _ = match_arg(
+                                    example.sentences,
+                                    doc_fea.doc_token_ids.numpy(),
+                                    arg,
+                                            offset=int(
+                                                self.feature_converter_func.include_cls
+                                    ),
+                                )
+                            nodes.append(real_arg)
+                            for j in range(len(adj_mat)):
+                                if (adj_mat[i][j] == 1 and i != j):
+                                    # j 
+                                    arg_tmp1 = self.tokenizer.convert_ids_to_tokens(doc_arg_rel_info.span_token_tup_list[j])
+                                    if all(x.upper() != "[UNK]" for x in arg_tmp):
+                                        real_arg1 = "".join(arg_tmp1)
+                                    else:
+                                        real_arg1, _ = match_arg(
+                                            example.sentences,
+                                            doc_fea.doc_token_ids.numpy(),
+                                            arg,
+                                            offset=int(
+                                                self.feature_converter_func.include_cls
+                                            ),
+                                        )
+                                        if real_arg1 is None:
+                                            self.logging(
+                                                f"doc: {doc_id}, arg ({arg_tmp1}) with UNK but original text not found",
+                                                level=logging.WARNING,
+                                            )
+                                            real_arg1 = arg_tmp1
+                                    graph.append((real_arg,real_arg1))
                     doc_res = {
                         "id": doc_id,
                         "event_list": event_list,
@@ -1679,6 +1947,9 @@ class DEETask(BasePytorchTask):
                             "pred_types": event_types,
                             "mspans": mspans,
                             "sentences": example.sentences,
+                            "graph": graph, # new from qy,
+			    "combinations": combi,
+			    "nodes": nodes,
                         },
                     }
                     fout.write(f"{json.dumps(doc_res, ensure_ascii=False)}\n")

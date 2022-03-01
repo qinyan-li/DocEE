@@ -816,12 +816,20 @@ class BasePytorchTask(object):
                 batch_info = get_info_on_batch(self, batch, **func_kwargs)
             # append metrics from this batch to event_info
             if isinstance(batch_info, torch.Tensor):
+                #self.logging("yesyesyesyes!!!")
                 total_info.append(
                     batch_info.to(torch.device("cpu"))  # collect results in cpu memory
                 )
             else:
                 # batch_info is a list of some info on each example
                 total_info.extend(batch_info)
+                #for lqy in range(len(batch_info[0])):
+
+                self.logging("nononono+0!!! {}".format(batch_info[0][0]))
+                self.logging("nononono+1!!! {}".format(len(batch_info[0][1])))
+                self.logging("nononono+2!!! {}".format(len(batch_info[0][2])))
+                self.logging("nononono+4!!! {}".format(len(batch_info[0][4])))
+                self.logging("nononono+5!!! {}".format(len(batch_info[0][5])))
 
         logger.info(pbar)
 
