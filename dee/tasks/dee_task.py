@@ -222,6 +222,12 @@ class DEETaskSetting(TaskSetting):
             self.test_file_name = "typed_test.json"
             self.inference_file_name =  "typed_test.json"
             self.doc_lang = "zh"
+        elif self.run_mode == "full_short":
+            self.train_file_name = "typed_train_short.json"
+            self.dev_file_name = "typed_dev_short.json"
+            self.test_file_name = "typed_test_short.json"
+            self.inference_file_name =  "typed_test_short.json"
+            self.doc_lang = "zh"
         elif self.run_mode == "half":
             self.train_file_name = "typed_train_1o2.json"
             self.dev_file_name = "typed_dev.json"
