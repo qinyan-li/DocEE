@@ -193,3 +193,5 @@ RECORDS.md
 *.json
 #scripts
 scripts/
+#notebooks
+*.ipynb

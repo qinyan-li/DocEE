@@ -170,12 +170,12 @@ def render_results(template_filepath, data):
 
 
 if __name__ == "__main__":
-    in_argv = parse_args()
+    in_argv = parse_args() # qy: 一些参数
 
-    if in_argv.local_rank != -1:
+    if in_argv.local_rank != -1: # qy：分布式的时候local_rank != -1 当前为-1
         in_argv.parallel_decorate = True
 
-    task_dir = os.path.join(in_argv.exp_dir, in_argv.task_name)
+    task_dir = os.path.join(in_argv.exp_dir, in_argv.task_name) # qy: Exps/TASK_NAME
     if not os.path.exists(task_dir):
         os.makedirs(task_dir, exist_ok=True)
 
@@ -189,8 +189,8 @@ if __name__ == "__main__":
     if not in_argv.skip_train:
         dee_setting = DEETaskSetting(**in_argv.__dict__)
     else:
-        dee_setting = DEETaskSetting.from_pretrained(
-            os.path.join(task_dir, "{}.task_setting.json".format(in_argv.cpt_file_name))
+        dee_setting = DEETaskSetting.from_pretrained( # qy: 在base_task中
+            os.path.join(task_dir, "{}.task_setting.json".format(in_argv.cpt_file_name))# qy: 记录了所有的参数 可以自己手动改的 如果要换inference set的话TriggerAwarePrunedCompleteGraph.task_setting.json
         )
         if in_argv.local_rank == -1 and dee_setting.local_rank != -1:
             dee_setting.local_rank = -1
@@ -200,14 +200,14 @@ if __name__ == "__main__":
     # build task
     dee_task = DEETask(
         dee_setting,
-        load_train=not in_argv.skip_train,
+        load_train=not in_argv.skip_train, # qy: 是否需要train
         load_dev=in_argv.load_dev,
         load_test=in_argv.load_test,
         load_inference=in_argv.load_inference,
         parallel_decorate=in_argv.parallel_decorate,
     )
 
-    if in_argv.speed_test:
+    if in_argv.speed_test: # qy: 目前不需要
         func_kwargs = dict(
             features=dee_task.test_features,
             use_gold_span=False,

@@ -226,7 +226,7 @@ class NERModel(nn.Module):
         return batch_seq_enc, ner_loss, batch_seq_preds
 
 
-class LSTMCRFNERModel(nn.Module):
+class LSTMCRFNERModel(nn.Module): # qy: 目前用的这个
     def __init__(self, config):
         super(LSTMCRFNERModel, self).__init__()
 

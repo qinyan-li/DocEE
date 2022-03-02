@@ -25,7 +25,7 @@ class DEEExample(object):
         self.doc_type = detail_align_dict.get("doc_type", "unk")
         self.num_sentences = len(self.sentences)
         if inlcude_complementary_ents:
-            self.complementary_field2ents = regex_extractor.extract_doc(
+            self.complementary_field2ents = regex_extractor.extract_doc( # qy: 正则匹配
                 detail_align_dict["sentences"]
             )
         else:
@@ -203,14 +203,14 @@ class DEEExample(object):
     @staticmethod
     def get_entity_label_list(template):
         visit_set = set()
-        entity_label_list = [NERExample.basic_entity_label]
+        entity_label_list = [NERExample.basic_entity_label] # qy: [O]
 
         for field in template.common_fields:
             if field not in visit_set:
                 visit_set.add(field)
                 entity_label_list.extend(["B-" + field, "I-" + field])
 
-        for event_name, fields, _, _ in template.event_type_fields_list:
+        for event_name, fields, _, _ in template.event_type_fields_list: # qy: 加上B/I指示各个role
             for field in fields:
                 if field not in visit_set:
                     visit_set.add(field)

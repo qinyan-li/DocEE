@@ -485,17 +485,17 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
         event_cls_loss = self.get_event_cls_info(
             doc_sent_context, doc_fea, train_flag=True
         )
-        for event_idx, event_label in enumerate(event_pred_list):
+        for event_idx, event_label in enumerate(event_pred_list): # qy: 所有预测出来的eventtypes
             if not event_label:
                 continue
-            events = doc_arg_rel_info.pred_event_arg_idxs_objs_list[event_idx]
+            events = doc_arg_rel_info.pred_event_arg_idxs_objs_list[event_idx] # qy: ground truth 中相同type下所有的events
             if events is None:
                 continue
             gold_combinations = events
-            for comb in combs:
+            for comb in combs: # qy: 叉乘上所有抽取出来的combinations
                 event_table = self.event_tables[event_idx]
-                gold_comb, _ = closest_match(comb, gold_combinations)
-                instance = assign_role_from_gold_to_comb(comb, gold_comb)
+                gold_comb, _ = closest_match(comb, gold_combinations) # qy: 找到最接近的gold combi 通过arguments
+                instance = assign_role_from_gold_to_comb(comb, gold_comb)# qy: 将gold combi的roles赋给当前的combi，允许出现一个entity多个role的，返回的是roles的set
                 span_idxs = []
                 role_types = []
                 span_rep_list_for_event_instance = []

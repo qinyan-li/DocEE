@@ -879,7 +879,7 @@ class DEETask(BasePytorchTask):
         else:
             dump_eval_json_path = None
         '''       	       
-######################################################################################## TODO ################
+################### print inference result during evaluation in training each epochs ################
         total_info = total_event_decode_results
         fn_splits = dump_eval_json_name.split(".")
         if (
