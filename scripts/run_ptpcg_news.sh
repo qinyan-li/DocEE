@@ -2,7 +2,7 @@
 
 {
     MODEL_NAME='TriggerAwarePrunedCompleteGraph'
-    TASK_NAME='PTPCG_P1-DuEE_fin'
+    TASK_NAME='PTPCG_P1-DuEE-news'
     echo "('${TASK_NAME}', '${MODEL_NAME}'),    # $(date)" >> RECORDS.md
     echo "Task Name: $TASK_NAME"
     echo "Model Name: $MODEL_NAME"
@@ -23,10 +23,60 @@
         # python send_message.py "Task $TASK_NAME started."
         echo "Task $TASK_NAME started."
        
+	CUDA_VISIBLE_DEVICES=${GPUS} python -u run_dee_task.py \
+            --use_bert=False \
+            --bert_model='bert-base-chinese' \
+            --seed=99 \
+            --data_dir='Data/DuEEData' \
+            --task_name=${TASK_NAME} \
+            --model_type=${MODEL_NAME} \
+            --cpt_file_name=${MODEL_NAME} \
+            --save_cpt_flag=False \
+            --save_best_cpt=True \
+            --remove_last_cpt=True \
+            --optimizer='adam' \
+            --learning_rate=0.0005 \
+            --dropout=0.1 \
+            --gradient_accumulation_steps=8 \
+            --train_batch_size=64 \
+            --eval_batch_size=16 \
+            --max_clique_decode=True \
+            --num_triggers=1 \
+            --eval_num_triggers=1 \
+            --with_left_trigger=True \
+            --directed_trigger_graph=True \
+            --use_scheduled_sampling=True \
+            --schedule_epoch_start=10 \
+            --schedule_epoch_length=10 \
+            --num_train_epochs=${EPOCH_NUM} \
+            --run_mode='news_without_trigger' \
+            --filtered_data_types='o2o,o2m,m2m,unk' \
+            --skip_train=False \
+            --load_dev=True \
+            --load_test=True \
+            --load_inference=False \
+            --inference_epoch=2 \
+            --run_inference=False \
+            --inference_dump_filepath='news_submit_new.json' \
+            --re_eval_flag=False \
+            --add_greedy_dec=False \
+            --num_lstm_layers=2 \
+            --hidden_size=768 \
+            --biaffine_hidden_size=512 \
+            --biaffine_hard_threshold=0.5 \
+            --at_least_one_comb=True \
+            --include_complementary_ents=True \
+            --event_type_template='luge_without_trigger' \
+            --use_span_lstm=True \
+            --span_lstm_num_layer=2 \
+            --role_by_encoding=True \
+            --use_token_role=True \
+            --ment_feature_type='concat' \
+            --ment_type_hidden_size=32
 
         # run on inference dataset
         CUDA_VISIBLE_DEVICES=${GPUS} python -u run_dee_task.py \
-            --data_dir='Data/news' \
+            --data_dir='Data/DuEEData' \
             --task_name=${TASK_NAME} \
             --model_type=${MODEL_NAME} \
             --cpt_file_name=${MODEL_NAME} \

@@ -2,7 +2,7 @@
 
 {
     MODEL_NAME='TriggerAwarePrunedCompleteGraph'
-    TASK_NAME='PTPCG_P1-zofund_new'
+    TASK_NAME='PTPCG_P1-zofund_new_noexp_inference_0207'
     echo "('${TASK_NAME}', '${MODEL_NAME}'),    # $(date)" >> RECORDS.md
     echo "Task Name: $TASK_NAME"
     echo "Model Name: $MODEL_NAME"
@@ -12,7 +12,7 @@
     GPUS="0"
     # GPUS=$(python wait.py --task_name="$TASK_NAME" --cuda=$GPU_SCOPE --wait="schedule" --req_gpu_num=$REQ_GPU_NUM)
     echo "GPUS: $GPUS"
-    EPOCH_NUM=100
+    EPOCH_NUM=25
 
     if [[ -z "$GPUS" ]]; then
         echo "GPUS is empty, stop..."
@@ -64,7 +64,7 @@
             --biaffine_hidden_size=512 \
             --biaffine_hard_threshold=0.5 \
             --at_least_one_comb=True \
-            --include_complementary_ents=True \
+            --include_complementary_ents=False \
             --event_type_template='zofund_without_trigger' \
             --use_span_lstm=True \
             --span_lstm_num_layer=2 \

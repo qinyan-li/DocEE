@@ -133,7 +133,7 @@ def reorganise_sents(sents, max_seq_len, concat=False, final_cut=False, concat_s
                 if final_cut:
                     group = sent[:max_seq_len]
                 else:
-                    sent_splits = sent_seg(sent, punctuations={"，", "、"})
+                    sent_splits = sent_seg(sent, punctuations={"，", "、", ",", "|"})
                     reorg_sent_splits = reorganise_sents(sent_splits, max_seq_len, concat=True, final_cut=True)
                     new_sents.extend(reorg_sent_splits)
             else:
@@ -207,9 +207,9 @@ def build(event_type2event_class, filepath, dump_filepath, max_seq_len=128, infe
         doc_type = 'unk'
         if len(event_types) > 0:
             et_counter = Counter(event_types).most_common()
-            if len(et_counter) == 0 and et_counter[0][1] == 1:
+            if len(et_counter) == 1 and et_counter[0][1] == 1:
                 doc_type = 'o2o'
-            elif len(et_counter) == 0 and et_counter[0][1] > 1:
+            elif len(et_counter) == 1 and et_counter[0][1] > 1:
                 doc_type = 'o2m'
             elif len(et_counter) > 0:
                 doc_type = 'm2m'

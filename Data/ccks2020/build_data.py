@@ -207,11 +207,11 @@ def build(event_type2event_class, filepath, dump_filepath, max_seq_len=128, infe
         doc_type = 'unk'
         if len(event_types) > 0:
             et_counter = Counter(event_types).most_common()
-            if len(et_counter) == 0 and et_counter[0][1] == 1:
+            if len(et_counter) == 1 and et_counter[0][1] == 1:
                 doc_type = 'o2o'
-            elif len(et_counter) == 0 and et_counter[0][1] > 1:
+            elif len(et_counter) == 1 and et_counter[0][1] > 1:
                 doc_type = 'o2m'
-            elif len(et_counter) > 0:
+            elif len(et_counter) > 1:
                 doc_type = 'm2m'
 
         data.append([
@@ -466,7 +466,7 @@ if __name__ == "__main__":
 
     build(template.event_type2event_class, 'train.json', 'ccks2020_train_without_trigger.json')
     build(template.event_type2event_class, 'dev.json', 'ccks2020_dev_without_trigger.json')
-    build(template.event_type2event_class, 'submit_test.json', 'ccks2020_submit_without_trigger.json', inference=True)
+    build(template.event_type2event_class, 'submit_test.json', 'ccks2020_submit_without_trigger.json')
 
     #template = get_event_template('luge_with_trigger')
 

@@ -170,14 +170,15 @@ if __name__ == "__main__":
 
     # data = load_json("DuEEData/luge_dev_with_trigger.json")
     # auto_select(data, strategy='high', max_trigger_num=num_trigger_group, verbose=True, with_trigger=True)
-    # data = load_json("DuEEData/luge_dev_without_trigger.json")
+    data = load_json("DuEEData/luge_train_without_trigger.json")
     # data = load_json("RAMS/typed_train_tgFalse_lv1.json")
-    data = load_json("typed_test.json")
-    # check_trigger(data, num_trigger_group=num_trigger_group)
-    auto_select(
-        data,
-        strategy="high",
-        max_trigger_num=num_trigger_group,
-        verbose=True,
-        with_trigger=False,
-    )
+    # data = load_json("typed_test.json")
+    result = check_trigger(data, num_trigger_group=num_trigger_group)
+    print(result)
+    # auto_select(
+    #    data,
+    #    strategy="high",
+    #    max_trigger_num=num_trigger_group,
+    #    verbose=True,
+    #    with_trigger=False,
+    # )

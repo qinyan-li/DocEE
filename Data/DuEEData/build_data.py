@@ -253,11 +253,11 @@ def build(
         doc_type = "unk"
         if len(event_types) > 0:
             et_counter = Counter(event_types).most_common()
-            if len(et_counter) == 0 and et_counter[0][1] == 1:
+            if len(et_counter) == 1 and et_counter[0][1] == 1: # one type one instance
                 doc_type = "o2o"
-            elif len(et_counter) == 0 and et_counter[0][1] > 1:
+            elif len(et_counter) == 1 and et_counter[0][1] > 1: # one type multi instance
                 doc_type = "o2m"
-            elif len(et_counter) > 0:
+            elif len(et_counter) > 1: # multi type multi instance
                 doc_type = "m2m"
 
         data.append(

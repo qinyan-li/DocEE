@@ -3,10 +3,9 @@ def read_file(path):
     res = []
     with open(path,'r',encoding='utf-8') as f:
         return json.load(f)
-def write_to_file(path,dataset):
-    with open(path,"w",encoding="utf-8") as fout:
-        for data in dataset:
-            fout.write(json.dumps(data,ensure_ascii = False)+"\n")
+def write_to_file(dump_filepath,inference_data):
+    with open(dump_filepath, "wt", encoding="utf-8") as fout:
+        json.dump(inference_data, fout, ensure_ascii=False)
 def convert_data(dataset):
     for data in dataset:
         data[1]['sentences'] = convert_sents(data[1]['sentences'])

@@ -1,5 +1,6 @@
 #!/bin/bash
 
+
 {
     MODEL_NAME='TriggerAwarePrunedCompleteGraph'
     TASK_NAME='n143-Tp44CG-with_left_trigger-comp_ents-OtherType-bs64_8'

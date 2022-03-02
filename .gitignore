@@ -188,3 +188,8 @@ Data/RAMS/*.jsonlines
 Data/RAMS/typed_*.json
 cache/
 RECORDS.md
+
+#json files
+*.json
+#scripts
+scripts/

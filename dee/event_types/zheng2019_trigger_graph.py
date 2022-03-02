@@ -71,6 +71,7 @@ class EquityFreezeEvent(BaseEvent):
     # TRIGGERS = ['LegalInstitution', 'FrozeShares', 'StartDate', 'EquityHolder', 'TotalHoldingRatio', 'UnfrozeDate', 'EndDate', 'TotalHoldingShares']
     TRIGGERS = {
         1: ["LegalInstitution"],
+        #1: ["FrozeShares"], # qy: 23 Feb 改成了froze shares
         2: ["FrozeShares", "LegalInstitution"],
         3: ["FrozeShares", "LegalInstitution", "StartDate"],
         4: ["EquityHolder", "FrozeShares", "LegalInstitution", "StartDate"],

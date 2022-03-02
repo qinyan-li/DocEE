@@ -1,4 +1,5 @@
 #!/bin/bash
+
 set -vx
 
 NUM_TRIGGER=$1

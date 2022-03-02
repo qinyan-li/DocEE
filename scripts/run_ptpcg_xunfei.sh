@@ -2,7 +2,7 @@
 
 {
     MODEL_NAME='TriggerAwarePrunedCompleteGraph'
-    TASK_NAME='PTPCG_P1-xunfei'
+    TASK_NAME='PTPCG_P1-xunfei_test'
     echo "('${TASK_NAME}', '${MODEL_NAME}'),    # $(date)" >> RECORDS.md
     echo "Task Name: $TASK_NAME"
     echo "Model Name: $MODEL_NAME"
@@ -12,7 +12,7 @@
     GPUS="0"
     # GPUS=$(python wait.py --task_name="$TASK_NAME" --cuda=$GPU_SCOPE --wait="schedule" --req_gpu_num=$REQ_GPU_NUM)
     echo "GPUS: $GPUS"
-    EPOCH_NUM=100
+    EPOCH_NUM=2
 
     if [[ -z "$GPUS" ]]; then
         echo "GPUS is empty, stop..."
@@ -50,7 +50,7 @@
             --num_train_epochs=${EPOCH_NUM} \
             --run_mode='xunfei_without_trigger' \
             --filtered_data_types='o2o,o2m,m2m,unk' \
-            --skip_train=False \
+            --skip_train=True \
             --load_dev=True \
             --load_test=True \
             --load_inference=False \
@@ -72,7 +72,7 @@
             --use_token_role=True \
             --ment_feature_type='concat' \
             --ment_type_hidden_size=32
-
+	: '
         # run on inference dataset
         CUDA_VISIBLE_DEVICES=${GPUS} python -u run_dee_task.py \
             --data_dir='Data/xunfei' \
@@ -90,8 +90,9 @@
             --run_inference=True \
             --inference_dump_filepath='xunfei_p1_submit_new.json' \
             --add_greedy_dec=False
+	'
     fi
-
+	
     # check if the process has finished normally
     LOG_FILE="Logs/$TASK_NAME.log"
     if [[ -f "$LOG_FILE" ]]; then
