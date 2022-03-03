@@ -22,7 +22,7 @@
         echo "GPU ready."
         # python send_message.py "Task $TASK_NAME started."
         echo "Task $TASK_NAME started."
-        :'
+        
 	CUDA_VISIBLE_DEVICES=${GPUS} python -u run_dee_task.py \
             --use_bert=False \
             --bert_model='bert-base-chinese' \
@@ -51,11 +51,10 @@
             --num_train_epochs=${EPOCH_NUM} \
             --run_mode='xunfei_without_trigger' \
             --filtered_data_types='o2o,o2m,m2m,unk' \
-            --skip_train=True \
+            --skip_train=False \
             --load_dev=True \
             --load_test=True \
             --load_inference=False \
-            --inference_epoch=2 \
             --run_inference=False \
             --inference_dump_filepath='xunfei_p1_submit_new.json' \
             --re_eval_flag=False \
@@ -73,7 +72,7 @@
             --use_token_role=True \
             --ment_feature_type='concat' \
             --ment_type_hidden_size=32
-	'
+	
         # run on inference dataset
         CUDA_VISIBLE_DEVICES=${GPUS} python -u run_dee_task.py \
             --data_dir='Data/xunfei' \
@@ -92,6 +91,7 @@
             --inference_dump_filepath='xunfei_p1_submit_new_0303.json' \
             --add_greedy_dec=False \
 	    --inference_labels=True
+	
     fi
 	
     # check if the process has finished normally
