@@ -687,7 +687,7 @@ class RegexEntExtractor(object):
         return field2results
 
 
-regex_extractor = RegexEntExtractor()
+regex_extractor = RegexEntExtractor() # qy：正则匹配
 
 
 def chain_prod(num_list: List):

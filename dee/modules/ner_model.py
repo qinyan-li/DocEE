@@ -228,14 +228,14 @@ class NERModel(nn.Module):
 
 class LSTMCRFNERModel(nn.Module): # qy: 目前用的这个
     def __init__(self, config):
-        super(LSTMCRFNERModel, self).__init__()
+        super(LSTMCRFNERModel, self).__init__() # qy: super 继承父类的init
 
         self.config = config
         # Word Embedding, Word Local Position Embedding
         self.token_embedding = CommonNERTokenEmbedding(
-            config.vocab_size,
-            config.hidden_size,
-            max_sent_len=config.max_sent_len,
+            config.vocab_size, # 21128
+            config.hidden_size, # 768
+            max_sent_len=config.max_sent_len, # 128
             dropout=config.dropout,
         )
         self.token_encoder = nn.LSTM(
@@ -248,7 +248,7 @@ class LSTMCRFNERModel(nn.Module): # qy: 目前用的这个
             bidirectional=True,
         )
         if self.config.use_crf_layer:
-            self.crf_layer = CRFLayer(config.hidden_size, self.config.num_entity_labels)
+            self.crf_layer = CRFLayer(config.hidden_size, self.config.num_entity_labels) # 768
         else:
             # Token Label Classification
             self.classifier = nn.Linear(

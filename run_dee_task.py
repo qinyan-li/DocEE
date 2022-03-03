@@ -143,6 +143,12 @@ def parse_args(in_args=None):
         default=False,
         help="whether to decorate model with parallel setting",
     )
+    arg_parser.add_argument(
+        "--inference_labels",
+        type=strtobool,
+        default=False,
+        help="Whether inference dataset contains labels,if True then we need to use them and evaluate",
+    )
 
     # add task setting arguments
     for key, val in DEETaskSetting.base_attr_default_pairs:
@@ -205,6 +211,7 @@ if __name__ == "__main__":
         load_test=in_argv.load_test,
         load_inference=in_argv.load_inference,
         parallel_decorate=in_argv.parallel_decorate,
+        inference_labels=in_argv.inference_labels
     )
 
     if in_argv.speed_test: # qy: 目前不需要
@@ -269,7 +276,7 @@ if __name__ == "__main__":
         # dump hyper-parameter settings
         if dee_task.is_master_node():
             fn = "{}.task_setting.json".format(dee_setting.cpt_file_name)
-            dee_setting.dump_to(task_dir, file_name=fn)
+            dee_setting.dump_to(task_dir, file_name=fn) # qy: write settings down
 
         dee_task.train(save_cpt_flag=in_argv.save_cpt_flag)
 
@@ -280,15 +287,15 @@ if __name__ == "__main__":
 
     if in_argv.run_inference:
         if in_argv.inference_epoch < 0:
-            best_epoch = print_best_test_via_dev(
+            best_epoch = print_best_test_via_dev( # qy: 打印最好的epoch和F1
                 in_argv.task_name, dee_setting.model_type, dee_setting.num_train_epochs
             )
         else:
             best_epoch = in_argv.inference_epoch
         dee_task.inference(
-            resume_epoch=int(best_epoch), dump_filepath=in_argv.inference_dump_filepath
+            resume_epoch=int(best_epoch), dump_filepath=in_argv.inference_dump_filepath,inference_labels = in_argv.inference_labels
         )
-        sys.exit(0)
+        sys.exit(0) # qy: inference完 直接退出
 
     if in_argv.debug_display:
         # import torch

@@ -340,6 +340,7 @@ class BasePytorchTask(object):
         load_dev=True,
         load_test=True,
         load_inference=False,
+        inference_labels=False,
     ):
         self.logging("=" * 20 + "Load Task Data" + "=" * 20)
         # prepare data
@@ -390,15 +391,16 @@ class BasePytorchTask(object):
 
         if load_inference:
             self.logging("Load inference portion")
-            load_example_func = functools.partial(
-                load_example_func, only_inference=True
-            )
+            if(not inference_labels): # qy: 如果需要inference的时候evaluation则inference_labels = True。默认为False
+                load_example_func = functools.partial(
+                    load_example_func, only_inference=True # qy: !!!! 此处改变了DEEExampleLoader在__call__函数的参数，改为了只inference从而不会存下labels
+                )
             (
                 self.inference_examples,
                 self.inference_features,
                 self.inference_dataset,
             ) = self.load_example_feature_dataset(
-                load_example_func,
+                load_example_func, # qy： DEEExampleLoader 
                 convert_to_feature_func,
                 convert_to_dataset_func,
                 file_name=self.setting.inference_file_name,
@@ -628,7 +630,7 @@ class BasePytorchTask(object):
         self,
         get_loss_func,
         kwargs_dict1={},
-        epoch_eval_func=None,
+        epoch_eval_func=None, # qy: DEETask.resume_save_eval_at
         kwargs_dict2={},
         base_epoch_idx=0,
     ):
@@ -666,7 +668,7 @@ class BasePytorchTask(object):
             ncols=80,
             ascii=True,
         ):
-            self.model.train()
+            self.model.train() # qy: set model to train mode
             iter_desc = f"Train(e{epoch_idx + 1})"
             if self.in_distributed_mode():
                 train_dataloader = self.prepare_dist_data_loader(
@@ -781,7 +783,7 @@ class BasePytorchTask(object):
     def base_eval(
         self,
         eval_dataset,
-        get_info_on_batch,
+        get_info_on_batch, # qy: DEETask.get_event_decode_result_on_batch
         reduce_info_type="mean",
         dump_pkl_path=None,
         **func_kwargs,

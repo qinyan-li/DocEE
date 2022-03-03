@@ -138,7 +138,7 @@ class EventTableForArgRel(nn.Module):
         )
 
 
-class EventTableForSigmoidMultiArgRel(nn.Module):
+class EventTableForSigmoidMultiArgRel(nn.Module): # qy: 目前是这个
     """build for event and corresponding roles classification
     simpler and fewer parameters than original EventTable in Doc2EDAG
 

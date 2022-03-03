@@ -381,7 +381,7 @@ class DEEExampleLoader(object):
             detail_align_info,
             self.template,
             self.tokenizer,
-            only_inference=only_inference,
+            only_inference=only_inference, # qy: if = True 就不convert labels了
             inlcude_complementary_ents=self.include_complementary_ents_flag,
         )
 

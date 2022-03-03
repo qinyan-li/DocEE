@@ -111,7 +111,7 @@ def stat_sent_len(filepath):
         )
     )
 
-
+# qy: get ranges of a given word "span"
 def get_span_drange(sents, span):
     drange = []
     common_span = (
@@ -155,11 +155,12 @@ def get_span_drange(sents, span):
                 )
             ):
                 continue
-            drange.append([sent_idx, *span_pos])
+            drange.append([sent_idx, *span_pos]) # qy: 第几句，从几到几
     return drange
 
-
+# qy: 将短句子合并为每句总长不超过128
 def reorganise_sents(sents, max_seq_len, concat=False, final_cut=False, concat_str=" "):
+    # qy: concat是否合并句子
     new_sents = []
     group = ""
     for sent in sents:
@@ -202,18 +203,18 @@ def build(
     not_valid = 0
     data = []
     for d in load_line_json_iterator(filepath):
-        sents = sent_seg(d["text"], punctuations={"；"})
-        sents = reorganise_sents(sents, max_seq_len, concat=True)
+        sents = sent_seg(d["text"], punctuations={"；"}) # qy: 分句
+        sents = reorganise_sents(sents, max_seq_len, concat=True) # qy: 合并短句
         # sents = d['map_sentences']
         # sentence length filtering
-        sents = list(filter(lambda x: len(x) >= 5, sents))
+        sents = list(filter(lambda x: len(x) >= 5, sents)) # qy: 去除<5个字的句子
         sents.insert(0, d["title"])
         # sents.insert(0, d['map_title'])
         ann_valid_mspans = []
         ann_valid_dranges = []
         ann_mspan2dranges = defaultdict(list)
         ann_mspan2guess_field = {}
-        recguid_eventname_eventdict_list = []
+        recguid_eventname_eventdict_list = [] #qy: event lists
 
         event_types = []
         if not inference:

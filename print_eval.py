@@ -363,7 +363,7 @@ def get_best_dev(
             task_name, model, data_type, "dev", span_type, epoch
         )
         all_results.append((epoch, result[measure_type][measure_key]))
-    all_results.sort(key=lambda x: x[1])
+    all_results.sort(key=lambda x: x[1]) # qy: 按照F1排序 取最大
     best_epoch, best_result = all_results[-1]
     return best_epoch, best_result
 
@@ -380,7 +380,7 @@ def print_best_test_via_dev(
     print(
         f"task_name={task_name}, model={model}, max_epoch={max_epoch}, data_type={data_type}, span_type={span_type}"
     )
-    best_epoch, best_dev_result = get_best_dev(
+    best_epoch, best_dev_result = get_best_dev( # 按照F1取最大的epoch
         task_name,
         model,
         max_epoch,
@@ -389,7 +389,7 @@ def print_best_test_via_dev(
         measure_type=measure_type,
         measure_key=measure_key,
     )
-    test_result = load_evaluate_results(
+    test_result = load_evaluate_results( # qy: 从training期间eval的json中得到
         task_name, model, data_type, "test", span_type, best_epoch
     )
     print(

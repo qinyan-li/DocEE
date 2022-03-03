@@ -328,6 +328,7 @@ class DEETask(BasePytorchTask):
         load_test=True,
         load_inference=False,
         parallel_decorate=True,
+        inference_labels=False,
     ):
         super(DEETask, self).__init__(
             dee_setting, only_master_logging=dee_setting.only_master_logging
@@ -533,13 +534,14 @@ class DEETask(BasePytorchTask):
 
         # load data
         self._load_data(
-            self.example_loader_func,
+            self.example_loader_func, # qy: DEEExampleLoader
             self.feature_converter_func,
             convert_dataset_func,
             load_train=load_train,
             load_dev=load_dev,
             load_test=load_test,
             load_inference=load_inference,
+            inference_labels=inference_labels,
         )
         # customized mini-batch producer
         self.custom_collate_fn = prepare_doc_batch_dict
@@ -679,7 +681,7 @@ class DEETask(BasePytorchTask):
         if resume_base_epoch is None:
             # whether to resume latest cpt when restarting, very useful for preemptive scheduling clusters
             if self.setting.resume_latest_cpt:
-                resume_base_epoch = self.get_latest_cpt_epoch()
+                resume_base_epoch = self.get_latest_cpt_epoch() # qy: 看之前是否已经有存下的epochs记录
             else:
                 resume_base_epoch = 0
 
@@ -752,7 +754,7 @@ class DEETask(BasePytorchTask):
         # all_id_map = defaultdict(dict)
         for task_idx, (data_type, gold_span_flag, heuristic_type) in enumerate(
             eval_tasks
-        ):
+        ): # qy: 四个tasks dev/test set × pred/gold spans
             if (
                 self.in_distributed_mode()
                 and task_idx % dist.get_world_size() != dist.get_rank()
@@ -829,13 +831,13 @@ class DEETask(BasePytorchTask):
         prev_epochs.sort()
 
         if len(prev_epochs) > 0:
-            latest_epoch = prev_epochs[-1]
+            latest_epoch = prev_epochs[-1] # qy: 之前最大的一个epoch
             self.logging(
                 "Pick latest epoch {} from {}".format(latest_epoch, str(prev_epochs))
             )
         else:
             latest_epoch = 0
-            self.logging("No previous epoch checkpoints, just start from scratch")
+            self.logging("No previous epoch checkpoints, just start from scratch") # qy: 从头开始训练
 
         return latest_epoch
 
@@ -1033,7 +1035,7 @@ class DEETask(BasePytorchTask):
                 self.logging(f"Results dumped to {dump_file_path}")
 ########################################################################################
         '''
-        total_eval_res = measure_dee_prediction(
+        total_eval_res = measure_dee_prediction( # qy: 计算F1等等 且直接写入dump_eval_json_path
             self.event_type_fields_pairs,
             features,
             total_event_decode_results,
@@ -1710,7 +1712,7 @@ class DEETask(BasePytorchTask):
             ) as fout:
                 json.dump(mid_result, fout, ensure_ascii=False, indent=2)
 
-    def inference(self, dump_filepath=None, resume_epoch=1):
+    def inference(self, dump_filepath=None, resume_epoch=1, inference_labels = False):
         import json
         import torch
 
@@ -1743,7 +1745,7 @@ class DEETask(BasePytorchTask):
                 # this func must run batch_info = model(batch_input)
                 # and metrics is an instance of torch.Tensor with Size([batch_size, ...])
                 # to fit the DataParallel and DistributedParallel functionality
-                batch_info = self.get_event_decode_result_on_batch(
+                batch_info = self.get_event_decode_result_on_batch( # qy: 跑eval
                     batch,
                     features=self.inference_features,
                     use_gold_span=False,
@@ -1757,7 +1759,7 @@ class DEETask(BasePytorchTask):
                 )
             else:
                 # batch_info is a list of some info on each example
-                total_info.extend(batch_info)
+                total_info.extend(batch_info) # qy: total_info集合了全部的batch_info
 
         if isinstance(total_info[0], torch.Tensor):
             # transform event_info to torch.Tensor
@@ -1768,13 +1770,29 @@ class DEETask(BasePytorchTask):
             == len(self.inference_features)
             == len(total_info)
         )
+
+
+        ########### qy: inference的时候打印出eval的结果 ##############
+        if(inference_labels):
+            dump_eval_json_path = dump_filepath.replace(".json","_eval_result.json") 
+
+            _ = measure_dee_prediction( # qy: 计算F1等等 且直接写入dump_eval_json_path
+                self.event_type_fields_pairs,
+                self.inference_features,
+                total_info, # TODO: 对一下这个是不是原有的那个size
+                self.setting.event_relevant_combination,
+                dump_json_path=dump_eval_json_path,
+            )
+        #####################################################
+
+
         # example_list = self.inference_examples
         # feature_list = self.inference_features
         example_list = []
         feature_list = []
         for info in total_info:
             self.logging(f"{info}")
-            example_list.append(self.inference_examples[info[0]])
+            example_list.append(self.inference_examples[info[0]]) # qy: only_inference的情况下应该labels都是空
             feature_list.append(self.inference_features[info[0]])
 
         if dump_filepath is not None:
