@@ -22,7 +22,8 @@
         echo "GPU ready."
         # python send_message.py "Task $TASK_NAME started."
         echo "Task $TASK_NAME started."
-        CUDA_VISIBLE_DEVICES=${GPUS} python -u run_dee_task.py \
+        :'
+	CUDA_VISIBLE_DEVICES=${GPUS} python -u run_dee_task.py \
             --use_bert=False \
             --bert_model='bert-base-chinese' \
             --seed=99 \
@@ -72,7 +73,7 @@
             --use_token_role=True \
             --ment_feature_type='concat' \
             --ment_type_hidden_size=32
-	: '
+	'
         # run on inference dataset
         CUDA_VISIBLE_DEVICES=${GPUS} python -u run_dee_task.py \
             --data_dir='Data/xunfei' \
@@ -88,9 +89,9 @@
             --load_inference=True \
             --inference_epoch=-1 \
             --run_inference=True \
-            --inference_dump_filepath='xunfei_p1_submit_new.json' \
-            --add_greedy_dec=False
-	'
+            --inference_dump_filepath='xunfei_p1_submit_new_0303.json' \
+            --add_greedy_dec=False \
+	    --inference_labels=True
     fi
 	
     # check if the process has finished normally
