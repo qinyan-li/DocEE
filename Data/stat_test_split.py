@@ -82,10 +82,11 @@ def hist(data: list, bins: int = 100, title: str = "No Title", threshold=0.9):
 
 
 def load_json(filepath):
-    data = []
+    res = []
     with open(filepath, "rt", encoding="utf-8") as fin:
-        data = json.load(fin)
-    return data
+        for line in fin.readlines():
+            res.append(json.loads(line.strip()))
+    return res
 
 
 def dump_json(obj, filepath, **kwargs):
