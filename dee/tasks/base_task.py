@@ -827,11 +827,11 @@ class BasePytorchTask(object):
                 total_info.extend(batch_info)
                 #for lqy in range(len(batch_info[0])):
 
-                self.logging("nononono+0!!! {}".format(batch_info[0][0]))
-                self.logging("nononono+1!!! {}".format(len(batch_info[0][1])))
-                self.logging("nononono+2!!! {}".format(len(batch_info[0][2])))
-                self.logging("nononono+4!!! {}".format(len(batch_info[0][4])))
-                self.logging("nononono+5!!! {}".format(len(batch_info[0][5])))
+                #self.logging("nononono+0!!! {}".format(batch_info[0][0]))
+                #self.logging("nononono+1!!! {}".format(len(batch_info[0][1])))
+                #self.logging("nononono+2!!! {}".format(len(batch_info[0][2])))
+                #self.logging("nononono+4!!! {}".format(len(batch_info[0][4])))
+                #self.logging("nononono+5!!! {}".format(len(batch_info[0][5])))
 
         logger.info(pbar)
 
