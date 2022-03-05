@@ -528,47 +528,9 @@ if __name__ == "__main__":
     # stat_shared_triggers('train.json')
 
     template = get_event_template("luge_without_trigger")
-
-    build(
-        template.event_type2event_class, "train.json", "luge_train_without_trigger.json"
-    )
-    build(template.event_type2event_class, "dev.json", "luge_dev_without_trigger.json")
-    build(
-        template.event_type2event_class,
-        "sample.json",
-        "luge_sample_without_trigger.json",
-    )
-    build(
-        template.event_type2event_class,
-        "submit_test.json",
-        "luge_submit_without_trigger.json",
-        inference=True,
-    )
-
-    template = get_event_template("luge_with_trigger")
-
-    build(
-        template.event_type2event_class,
-        "train.json",
-        "luge_train_with_trigger.json",
-        add_trigger=True,
-    )
-    build(
-        template.event_type2event_class,
-        "dev.json",
-        "luge_dev_with_trigger.json",
-        add_trigger=True,
-    )
-    build(
-        template.event_type2event_class,
-        "sample.json",
-        "luge_sample_with_trigger.json",
-        add_trigger=True,
-    )
-    build(
-        template.event_type2event_class,
-        "submit_test.json",
-        "luge_submit_with_trigger.json",
-        inference=True,
-        add_trigger=True,
-    )
+    for i in range(7):
+        name = "test_split" + str(i) 
+        build(
+            template.event_type2event_class, name+".json", "typed"+name+".json"
+        )
+    
