@@ -175,8 +175,8 @@ def directed_trigger_graph_decode(
     adj_mat: List[List[int]],
     num_triggers: int,
     self_loop=False,
-    max_clique=False,
-    with_left_trigger=False,
+    max_clique=False, # qy: =true
+    with_left_trigger=False, # qy: =true
     with_all_one_trigger_comb=False,
 ) -> List[Tuple[int]]:
     r"""get decoded combinations from adjacent mat
@@ -195,7 +195,7 @@ def directed_trigger_graph_decode(
     Returns:
         list of combinations in tuple format
     """
-    connections = build_single_element_connections(
+    connections = build_single_element_connections( # qy: 由邻接矩阵得到邻接表
         adj_mat, tuple_key=False, self_loop=self_loop
     )
     triggers = set()
@@ -212,19 +212,19 @@ def directed_trigger_graph_decode(
     if num_triggers == 1:
         for v in connections:
             comb = set()
-            if len(connections[v]) > 0:
+            if len(connections[v]) > 0: # qy: out-edged nodes
                 comb.add(v)
-                comb.update(connections[v])
+                comb.update(connections[v]) # qy: 加上邻居
             if len(comb) > 0 and comb not in combs:
                 combs.append(comb)
     else:
         fold_adj_mat = fold_and(adj_mat)
         # fold_and_adj_mat = left_tril(adj_mat)
         if max_clique:
-            trigger_combs = bron_kerbosch_pivoting_decode(fold_adj_mat, 2)
+            trigger_combs = bron_kerbosch_pivoting_decode(fold_adj_mat, 2) # qy: bk算法得到所有的cliques的集合，如[(0, 1, 4), (1, 2), (2, 3), (3, 4), (3, 5)]
         else:
             trigger_combs = brute_force_adj_decode(fold_adj_mat, 2)
-        trigger_combs = list(filter(lambda c: len(c) <= num_triggers, trigger_combs))
+        trigger_combs = list(filter(lambda c: len(c) <= num_triggers, trigger_combs)) # qy: 只保留<=num_trigger的
         used_triggers = set()
         for tc in trigger_combs:
             used_triggers.update(set(tc))
@@ -278,7 +278,7 @@ def directed_trigger_graph_incremental_decode(
     Returns:
         list of combinations in tuple format
     """
-    connections = build_single_element_connections(adj_mat, tuple_key=False)
+    connections = build_single_element_connections(adj_mat, tuple_key=False) # qy: 由邻接矩阵得到邻接表
     combs = list()
     if num_triggers < 1:
         # guessing mode
@@ -287,9 +287,9 @@ def directed_trigger_graph_incremental_decode(
     if num_triggers == 1:
         for v in connections:
             comb = set()
-            if len(connections[v]) > 0:
+            if len(connections[v]) > 0: # qy: outing-edged node
                 comb.add(v)
-                comb.update(connections[v])
+                comb.update(connections[v]) # qy: 加上所有neighbors
             if len(comb) > 0 and comb not in combs:
                 combs.append(comb)
     else:

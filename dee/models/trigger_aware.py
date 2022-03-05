@@ -473,9 +473,9 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
             combs = directed_trigger_graph_decode(
                 pred_adj_mat,
                 num_triggers,
-                self_loop=self.config.self_loop,
-                max_clique=self.config.max_clique_decode,
-                with_left_trigger=self.config.with_left_trigger,
+                self_loop=self.config.self_loop, # qy: =false目前
+                max_clique=self.config.max_clique_decode, # qy: =true目前
+                with_left_trigger=self.config.with_left_trigger, # qy: =true目前
             )
 
         if self.config.at_least_one_comb:
@@ -612,12 +612,12 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
             num_triggers = self.config.eval_num_triggers
 
         if self.config.incremental_min_conn > -1:
-            raw_combinations = directed_trigger_graph_incremental_decode(
+            raw_combinations = directed_trigger_graph_incremental_decode( 
                 pred_adj_mat, num_triggers, self.config.incremental_min_conn
             )
-        else:
+        else: # qy: 目前是这个
             # raw_combinations = directed_trigger_graph_decode(pred_adj_mat, num_triggers, self.config.max_clique_decode, self.config.with_left_trigger, self.config.with_all_one_trigger_comb)
-            raw_combinations = directed_trigger_graph_decode(
+            raw_combinations = directed_trigger_graph_decode( # qy: combination decoding 解码图得到组合
                 pred_adj_mat,
                 num_triggers,
                 self_loop=self.config.self_loop,

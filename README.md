@@ -162,6 +162,8 @@ at_least_one_comb = True
 include_complementary_ents = True
 # event schemas, check `dee/event_types` for all support schemas
 event_type_template = 'zheng2019_trigger_graph'
+# qy: whether to evaluate using labels in inference step, default False
+inference_labels = False 
 ```
 
 ### ⚽Find Pseudo Triggers
@@ -229,3 +231,10 @@ This repo is still under development.
 If you find any bugs, don't hesitate to drop us an issue.
 
 Thanks~
+
+## For Qinyan: how to create environment on a new machine
+ conda create -n qinyan_git python=3.7.7
+
+ conda activate qinyan_git
+
+ pip install -e .

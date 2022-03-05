@@ -366,7 +366,7 @@ def fold_and(mat):
     for i in range(len(mat)):
         for j in range(len(mat[0])):
             if mat[i][j] == mat[j][i] == 1:
-                new_mat[i][j] = new_mat[j][i] = 1
+                new_mat[i][j] = new_mat[j][i] = 1 # qy: 只记录下双向的箭头
     return new_mat
 
 
