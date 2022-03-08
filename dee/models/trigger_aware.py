@@ -637,9 +637,9 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
             event_table = self.event_tables[event_idx]
             # TODO(tzhu): m2m support from all the combinations
             """combinations filtering based on minimised number of argument"""
-            combinations = list(filter(lambda x: len(x) >= event_table.min_field_num, raw_combinations)) # qy: qy加上的
+            #combinations = list(filter(lambda x: len(x) >= event_table.min_field_num, raw_combinations)) # qy: qy加上的
             """end of combination filtering"""
-            # combinations = copy.deepcopy(raw_combinations) # qy 去掉的
+            combinations = copy.deepcopy(raw_combinations) # qy 去掉的
             event_idx2combinations.append(combinations)
             if len(combinations) <= 0:
                 event_idx2obj_idx2field_idx2token_tup.append(None)

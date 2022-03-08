@@ -358,7 +358,7 @@ if __name__ == "__main__":
     # d2 = load_line_json("DuEEData/dev.json")
     # data = d1 + d2
     # stat_len_duee_fin(data)
-
+    
     for i in range(7):
         data_name = "test_split" + str(i)
         data = load_json(f"{data_name}.json")
@@ -368,7 +368,10 @@ if __name__ == "__main__":
     data = load_json("sample_train.json")
     data = [random.choice(data) for _ in range(48)]
     stat(data, "sample_train_48", plot_figures=False)
-
+    
+    #data = load_json("test_gaixie_0308.json")
+    #stat(data, "test_gaixie_0308.json", plot_figures=False)
+    
     # # 1/8
     # data = load_json("train.json")
     # random.shuffle(data)
