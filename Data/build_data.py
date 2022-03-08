@@ -545,7 +545,7 @@ if __name__ == "__main__":
     )
     '''
     template = get_event_template("zheng2019_trigger_graph")
-    
+    '''
     build(
         template.event_type2event_class,
         "train_baidu_format.json",
@@ -565,11 +565,12 @@ if __name__ == "__main__":
     #    "luge_sample_with_trigger.json",
     #    add_trigger=True,
     #)
-    
+    '''
     build(
         template.event_type2event_class,
-        "test_baidu_format.json",
-        "typed_test_short.json",
+        "test_gaixie_0308.json",
+        "test_gaixie_0308.json",
         #inference=True,
         #add_trigger=True,
     )
+
