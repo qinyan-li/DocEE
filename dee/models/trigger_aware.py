@@ -30,14 +30,14 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
     def __init__(self, config, event_type_fields_pairs, ner_model):
         super().__init__(config, event_type_fields_pairs, ner_model=ner_model)
 
-        if self.config.use_token_role:
-            if config.ment_feature_type == "concat":
+        if self.config.use_token_role: # qy: 使用NER出来的entity类型 当前true
+            if config.ment_feature_type == "concat": # qy: 当前 concat
                 self.ment_type_encoder = MentionTypeConcatEncoder(
-                    config.ment_type_hidden_size,
-                    len(config.ent_type2id),
+                    config.ment_type_hidden_size, # qy: 32
+                    len(config.ent_type2id), # qy: ChFin为26 
                     dropout=config.dropout,
                 )
-                self.hidden_size = config.hidden_size + config.ment_type_hidden_size
+                self.hidden_size = config.hidden_size + config.ment_type_hidden_size # qy: 768 + 32 = 800
             else:
                 self.ment_type_encoder = MentionTypeEncoder(
                     config.hidden_size, config.num_entity_labels, dropout=config.dropout
@@ -50,18 +50,18 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
             self.end_lstm
         ) = self.start_mlp = self.end_mlp = self.biaffine = None
 
-        if self.config.use_span_lstm:
+        if self.config.use_span_lstm: # qy: 当前true
             self.span_lstm = nn.LSTM(
-                self.hidden_size,
-                self.hidden_size // 2,
-                num_layers=self.config.span_lstm_num_layer,
+                self.hidden_size, # qy: 800
+                self.hidden_size // 2, 
+                num_layers=self.config.span_lstm_num_layer, # qy: =2
                 bias=True,
                 batch_first=True,
                 dropout=self.config.dropout,
                 bidirectional=True,
             )
 
-        if self.config.mlp_before_adj_measure:
+        if self.config.mlp_before_adj_measure: # qy: 是否需要MLP来算adj mat. 否则用linear
             self.q_w = MLP(
                 self.hidden_size, self.hidden_size, dropout=self.config.dropout
             )
@@ -72,11 +72,11 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
             self.q_w = nn.Linear(self.hidden_size, self.hidden_size)
             self.k_w = nn.Linear(self.hidden_size, self.hidden_size)
 
-        if self.config.use_mention_lstm:
+        if self.config.use_mention_lstm: # qy: 当前false
             self.mention_lstm = nn.LSTM(
-                self.hidden_size,
+                self.hidden_size, # qy: 800
                 self.hidden_size // 2,
-                num_layers=self.config.num_mention_lstm_layer,
+                num_layers=self.config.num_mention_lstm_layer, # qy: =1
                 bias=True,
                 batch_first=True,
                 dropout=self.config.dropout,
@@ -637,9 +637,9 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
             event_table = self.event_tables[event_idx]
             # TODO(tzhu): m2m support from all the combinations
             """combinations filtering based on minimised number of argument"""
-            combinations = list(filter(lambda x: len(x) >= event_table.min_field_num, raw_combinations)) # qy: qy加上的
+            #combinations = list(filter(lambda x: len(x) >= event_table.min_field_num, raw_combinations)) # qy: qy加上的
             """end of combination filtering"""
-            # combinations = copy.deepcopy(raw_combinations) # qy 去掉的
+            combinations = copy.deepcopy(raw_combinations) # qy 去掉的
             event_idx2combinations.append(combinations)
             if len(combinations) <= 0:
                 event_idx2obj_idx2field_idx2token_tup.append(None)

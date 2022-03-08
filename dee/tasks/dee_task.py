@@ -346,7 +346,7 @@ class DEETask(BasePytorchTask):
         self.event_template = get_event_template(self.setting.event_type_template)
 
         # get entity and event label name
-        self.entity_label_list = DEEExample.get_entity_label_list(self.event_template)
+        self.entity_label_list = DEEExample.get_entity_label_list(self.event_template) # qy: 得到 B-x/I-x/O的列表
         self.event_type_fields_pairs = DEEExample.get_event_type_fields_pairs(
             self.event_template
         )
@@ -369,9 +369,9 @@ class DEETask(BasePytorchTask):
                     "Model is not Doc2EDAG! Make sure you know what you are doing here."
                 )
             assert self.setting.add_greedy_dec is False
-            self.setting.num_entity_labels = 3  # 0: 'O', 1: 'Begin', 2: 'Inside'
+            self.setting.num_entity_labels = 3  # 0: 'O', 1: 'Begin', 2: 'Inside' # qy: 若不用NER的类型的话 就只有三种labels
         else:
-            self.setting.num_entity_labels = len(self.entity_label_list)
+            self.setting.num_entity_labels = len(self.entity_label_list) # qy: 当前 有 2n+1种labels
 
         self.setting.tag_id2tag_name = {
             idx: name for idx, name in enumerate(self.entity_label_list)
