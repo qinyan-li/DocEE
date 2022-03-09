@@ -88,7 +88,7 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
         #     dropout=self.config.dropout
         # )
 
-        self.event_tables = nn.ModuleList(
+        self.event_tables = nn.ModuleList( # qy：既预测事件类型也预测角色类型
             [
                 EventTableForSigmoidMultiArgRel(
                     event_type,
@@ -99,7 +99,7 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
                     use_field_cls_mlp=self.config.use_field_cls_mlp,
                     dropout=self.config.dropout,
                 )
-                for event_type, field_types, _, min_field_num in self.event_type_fields_pairs
+                for event_type, field_types, _, min_field_num in self.event_type_fields_pairs # qy: 从event_table中来的 （事件类型，角色名，——，每个事件最少需要的角色）
             ]
         )
 
@@ -113,7 +113,7 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
     #     adj_mat.fill_diagonal_(0)
     #     return adj_mat
 
-    def get_arg_role_loss(self, arg_role_logits, role_types):
+    def get_arg_role_loss(self, arg_role_logits, role_types): #qy: 角色预测的loss 
         rt_multihot = torch.zeros_like(arg_role_logits, requires_grad=False)
         for ent_idx, roles in enumerate(role_types):
             if roles is None:
@@ -146,13 +146,13 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
             else:
                 use_gold_span = False
 
-        # get doc token-level local context
+        # get doc token-level local context # qy: NER?
         (
-            doc_token_emb_list,
+            doc_token_emb_list, # qy: token embeddings
             doc_token_masks_list,
-            doc_token_types_list,
-            doc_sent_emb_list,
-            doc_sent_loss_list,
+            doc_token_types_list, # qy: NER的预测结果 BIO标签
+            doc_sent_emb_list, # qy: sentence embeddings?
+            doc_sent_loss_list, # qy: loss?
         ) = self.get_local_context_info(
             doc_batch_dict,
             train_flag=train_flag,
@@ -164,7 +164,7 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
         doc_fea_list = [doc_features[ex_idx] for ex_idx in ex_idx_list]
 
         # get doc span-level info for event extraction
-        doc_arg_rel_info_list = get_doc_arg_rel_info_list(
+        doc_arg_rel_info_list = get_doc_arg_rel_info_list( # qy: 从刚刚预测出来的BIO标签得到span信息 etc?
             doc_token_types_list,
             doc_fea_list,
             self.event_type_fields_pairs,
@@ -222,7 +222,7 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
                     mention_emb = self.span_token_reducer(
                         mention_token_emb
                     )  # [hidden_size]
-                elif self.config.seq_reduce_type == "MaxPooling":
+                elif self.config.seq_reduce_type == "MaxPooling": # qy: 目前是max pooling
                     mention_emb = mention_token_emb.max(dim=0)[0]
                 elif self.config.seq_reduce_type == "MeanPooling":
                     mention_emb = mention_token_emb.mean(dim=0)
@@ -238,14 +238,14 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
                 if self.config.ment_feature_type == "concat":
                     yy = [
                         self.config.tag_id2tag_name[x]
-                        for x in doc_arg_rel_info.mention_type_list
+                        for x in doc_arg_rel_info.mention_type_list # qy: 当前预测出来的mention type
                     ]
                     # there will be 'O' labels for mentions if `OtherType` is not included in the ent list
                     zz = [
-                        self.config.ent_type2id[xx[2:] if len(xx) > 2 else xx]
+                        self.config.ent_type2id[xx[2:] if len(xx) > 2 else xx] # qy: mention type to id map
                         for xx in yy
                     ]
-                    doc_mention_emb = self.ment_type_encoder(doc_mention_emb, zz)
+                    doc_mention_emb = self.ment_type_encoder(doc_mention_emb, zz) # qy: (batch_mention_emb, mention_type_ids) 合并mention和type的embedding 得到800维
                 else:
                     doc_mention_emb = self.ment_type_encoder(
                         doc_mention_emb, doc_arg_rel_info.mention_type_list
@@ -260,9 +260,9 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
         get all the span representations by aggregating mention representations,
         and sentence representations
         """
-        doc_mention_emb = self.get_doc_span_mention_emb(doc_token_emb, doc_arg_rel_info)
+        doc_mention_emb = self.get_doc_span_mention_emb(doc_token_emb, doc_arg_rel_info) # qy: 得到每个mention的embedding 由mention的和type的合并 800维
 
-        if self.config.use_mention_lstm:
+        if self.config.use_mention_lstm: # qy: 再过一层mention lstm
             # mention further encoding
             doc_mention_emb = self.mention_lstm(doc_mention_emb.unsqueeze(0))[
                 0
@@ -397,7 +397,7 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
         if self.config.stop_gradient:
             doc_token_emb = doc_token_emb.detach()
             doc_sent_emb = doc_sent_emb.detach()
-        span_context_list, doc_sent_context = self.get_doc_span_sent_context(
+        span_context_list, doc_sent_context = self.get_doc_span_sent_context( # qy: get all the span representations by aggregating mention representations, and sentence representations        
             doc_token_emb,
             doc_sent_emb,
             doc_fea,
@@ -513,10 +513,10 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
                 span_rep_for_event_instance = torch.stack(
                     span_rep_list_for_event_instance, dim=0
                 )
-                role_cls_logits = event_table(
+                role_cls_logits = event_table( 
                     batch_span_emb=span_rep_for_event_instance
                 )
-                role_loss = self.get_arg_role_loss(role_cls_logits, role_types)
+                role_loss = self.get_arg_role_loss(role_cls_logits, role_types) # qy: 角色预测的loss
                 arg_role_loss.append(role_loss)
 
         self.losses.update(

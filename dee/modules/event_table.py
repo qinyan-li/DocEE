@@ -189,7 +189,7 @@ class EventTableForSigmoidMultiArgRel(nn.Module): # qy: 目前是这个
     def forward(self, sent_context_emb=None, batch_span_emb=None):
         assert (sent_context_emb is None) ^ (batch_span_emb is None)
 
-        if sent_context_emb is not None:  # [num_spans+num_sents, hidden_size]
+        if sent_context_emb is not None:  # [num_spans+num_sents, hidden_size] # qy: 预测事件类型
             # tzhu: every sentence has an attention score,
             # and document embedding is a attention-based
             # weighted sentence representation
@@ -200,12 +200,12 @@ class EventTableForSigmoidMultiArgRel(nn.Module): # qy: 目前是这个
 
             return doc_pred_logp
 
-        if batch_span_emb is not None:
+        if batch_span_emb is not None: # qy: 预测角色
             # span_context_emb: [batch_size, hidden_size] or [hidden_size]
             if batch_span_emb.dim() == 1:
                 batch_span_emb = batch_span_emb.unsqueeze(0)
             # (B, C)
-            span_pred_logits = torch.sigmoid(self.field_cls(batch_span_emb))
+            span_pred_logits = torch.sigmoid(self.field_cls(batch_span_emb)) # qy: linear/MLP + sigmoid
             return span_pred_logits
 
     def predict_span_role(self, batch_span_emb, unique_role=True):

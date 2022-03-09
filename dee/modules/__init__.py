@@ -221,11 +221,11 @@ class MentionTypePluser(nn.Module):
         return out
 
 
-class MentionTypeConcatEncoder(nn.Module):
+class MentionTypeConcatEncoder(nn.Module): # qy: 当前使用的
     def __init__(self, hidden_size, num_ment_types, dropout=0.1):
         super().__init__()
 
-        self.embedding = nn.Embedding(num_ment_types, hidden_size)
+        self.embedding = nn.Embedding(num_ment_types, hidden_size) # qy: Chfin为26到32
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, batch_mention_emb, mention_type_ids):
@@ -237,8 +237,8 @@ class MentionTypeConcatEncoder(nn.Module):
                 requires_grad=False,
             )
 
-        batch_mention_type_emb = self.embedding(mention_type_ids)
-        out = torch.cat([batch_mention_emb, batch_mention_type_emb], dim=-1)
+        batch_mention_type_emb = self.embedding(mention_type_ids) # qy: 把mention type embed到32维
+        out = torch.cat([batch_mention_emb, batch_mention_type_emb], dim=-1) # qy: 把 mention emb和type emb合并
         out = self.dropout(out)
 
         return out
