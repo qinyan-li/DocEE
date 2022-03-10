@@ -155,7 +155,7 @@ def subsequent_mask(size):
 def attention(query, key, value, mask=None, dropout=None, return_scores=False):
     """Compute 'Scaled Dot Product Attention'"""
     d_k = query.size(-1)
-    scores = torch.matmul(query, key.transpose(-2, -1)) / math.sqrt(d_k)
+    scores = torch.matmul(query, key.transpose(-2, -1)) / math.sqrt(d_k) # qy： Q^T*K/sqrt(dim)
     if mask is not None:
         scores = scores.masked_fill(mask == 0, -1e9)
     p_attn = F.softmax(scores, dim=-1)

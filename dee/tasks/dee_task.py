@@ -1964,6 +1964,8 @@ class DEETask(BasePytorchTask):
                                             )
                                             real_arg1 = arg_tmp1
                                     graph.append((real_arg,real_arg1))
+                    scores = result[6]
+                    
                     doc_res = {
                         "id": doc_id,
                         "event_list": event_list,

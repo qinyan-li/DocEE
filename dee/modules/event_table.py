@@ -208,42 +208,42 @@ class EventTableForSigmoidMultiArgRel(nn.Module): # qy: 目前是这个
             span_pred_logits = torch.sigmoid(self.field_cls(batch_span_emb)) # qy: linear/MLP + sigmoid
             return span_pred_logits
 
-    def predict_span_role(self, batch_span_emb, unique_role=True):
+    def predict_span_role(self, batch_span_emb, unique_role=False):
         num_ents = batch_span_emb.shape[0]
         if batch_span_emb.dim() == 1:
             batch_span_emb = batch_span_emb.unsqueeze(0)
         # (B, C)
-        span_pred_logits = torch.sigmoid(self.field_cls(batch_span_emb))
-        span_pred = span_pred_logits.ge(self.threshold).long()
-        ent_results = [[] for _ in range(num_ents)]
+        span_pred_logits = torch.sigmoid(self.field_cls(batch_span_emb)) # qy: linear/MLP + sigmoid, 行数 # entities 列数 # roles
+        span_pred = span_pred_logits.ge(self.threshold).long() # qy: >=threshold 为1
+        ent_results = [[] for _ in range(num_ents)] 
         if unique_role:
-            role_pred_stats = span_pred.sum(0).detach().cpu().tolist()
+            role_pred_stats = span_pred.sum(0).detach().cpu().tolist() # qy: 沿第一列求和 看是否>0
             pred_results = []
             for role_index, rps in enumerate(role_pred_stats):
                 if rps == 0:
-                    pred_results.append(None)
+                    pred_results.append(None) #qy: 该role没有预测为正的
                 else:
-                    pred_results.append(span_pred_logits[:, role_index].argmax())
+                    pred_results.append(span_pred_logits[:, role_index].argmax()) # qy: 每个role取最大的一个entity（一列最大的行数）一个role一个entity
             # # FIXED: one ent should be able to map multiple roles, other than overlapping by new roles
             # ent_results = [None for _ in range(num_ents)]
             # for role_index, pr in enumerate(pred_results):
             #     if pr is not None:
             #         ent_results[pr] = role_index
             # return ent_results
-            for role_index, pr in enumerate(pred_results):
+            for role_index, pr in enumerate(pred_results): # qy: (role0, entity2),(role1,None),(role2,entity3) etc.
                 if pr is not None:
-                    ent_results[pr].append(role_index)
+                    ent_results[pr].append(role_index) # qy: entity to role lists （一个entity可以多个role）
         else:
             for span in range(num_ents):
-                for role_index, role_result in enumerate(span_pred[span]):
+                for role_index, role_result in enumerate(span_pred[span]): #qy： 一行 该span entity预测的各个role的scores
                     if role_result == 1:
-                        ent_results[span].append(role_index)
+                        ent_results[span].append(role_index) # qy: 所有>threshold 的都加进去
         new_ent_results = []
         for r in ent_results:
             if isinstance(r, list) and len(r) <= 0:
                 r = None
             new_ent_results.append(r)
-        return new_ent_results
+        return new_ent_results # qy: 返回每个entity的预测结果(list of roles)
 
     def extra_repr(self):
         return "event_type={}, num_fields={}, hidden_size={}".format(

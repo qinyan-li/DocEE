@@ -131,7 +131,7 @@ class AttentiveReducer(nn.Module):
         # batch_att_emb: Size([*, 1, hidden_size])
         # self.att: Size([*, 1, seq_len])
         batch_att_emb, self.att = transformer.attention(
-            query, batch_token_emb, batch_token_emb, mask=att_mask
+            query, batch_token_emb, batch_token_emb, mask=att_mask # qy; query, key, value
         )
 
         batch_att_emb = self.dropout(self.layer_norm(batch_att_emb))
