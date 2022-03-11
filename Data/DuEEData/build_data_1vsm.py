@@ -243,7 +243,8 @@ def build(
                     if len(ocurr) <= 0:
                         continue
                     ### new ###
-                    if (arg_pair["role"] in role2arg.keys()):
+                    print(arg_pair["role"])
+                    if (role2arg[arg_pair["role"]] is not None):
                         role2arg[arg_pair["role"]].append(arg_pair["argument"])
                     else:
                         role2arg[arg_pair["role"]] = [arg_pair["argument"]]
