@@ -198,3 +198,5 @@ scripts/
 *.ipynb"
 #Data
 Data/
+#zip
+*.zip
