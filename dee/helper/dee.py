@@ -53,7 +53,7 @@ class DEEExample(object):
                 for raw_field, ents in self.complementary_field2ents.items():
                     # field = 'Other' + field.title()
                     field = "OtherType"
-                    for ent, pos_span in ents:
+                    for ent, pos_span in ents: # qy: pos_span: [sent_id, start, end]
                         pos_span = list(pos_span)
                         if ent not in detail_align_dict["ann_valid_mspans"]:
                             comp_ents_sent_index[pos_span[0]].append(
@@ -67,9 +67,9 @@ class DEEExample(object):
                             )
 
                 # remove overlaped Date
-                mspan2fields = copy.deepcopy(detail_align_dict["ann_mspan2guess_field"])
-                mspan2dranges = copy.deepcopy(detail_align_dict["ann_mspan2dranges"])
-                for ent, field in mspan2fields.items():
+                mspan2fields = copy.deepcopy(detail_align_dict["ann_mspan2guess_field"]) # qy: argument对应role
+                mspan2dranges = copy.deepcopy(detail_align_dict["ann_mspan2dranges"]) # qy: argument对应出现的ranges
+                for ent, field in mspan2fields.items(): # qy: 一个argument 一个role
                     for drange in mspan2dranges[ent]:
                         for s_ent in comp_ents_sent_index.get(drange[0], []):
                             s_ent, raw_field, pos_span = s_ent
@@ -83,7 +83,7 @@ class DEEExample(object):
                                     self.complementary_field2ents[raw_field].remove(
                                         [s_ent, pos_span]
                                     )
-
+                # qy: 把complementary 的补充上去
                 for raw_field, ents in self.complementary_field2ents.items():
                     field = "OtherType"
                     for ent, pos_span in ents:
