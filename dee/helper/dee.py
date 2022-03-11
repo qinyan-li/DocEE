@@ -156,13 +156,13 @@ class DEEExample(object):
                 mrecguid,
                 event_name,
                 event_dict,
-            ) in self.recguid_eventname_eventdict_list:
-                event_class = template.event_type2event_class[event_name]
+            ) in self.recguid_eventname_eventdict_list: # qy: [event_idx, ins["event_type"], role2arg]
+                event_class = template.event_type2event_class[event_name] # qy: 由event type对应到event_table文件中的class
                 event_obj = event_class()
                 # assert isinstance(event_obj, BaseEvent)
                 event_obj.update_by_dict(event_dict, recguid=mrecguid)
 
-                if event_obj.name in self.event_type2event_objs:
+                if event_obj.name in self.event_type2event_objs: # qy: event_obj.name = event_name
                     self.event_type2event_objs[event_obj.name].append(event_obj)
                 else:
                     self.event_type2event_objs[event_name] = [event_obj]
@@ -778,7 +778,7 @@ class DEEFeatureConverter(object):
                 event_type_labels.append(0)
                 event_arg_idxs_objs_list.append(None)
             else:
-                event_objs = dee_example.event_type2event_objs[event_type]
+                event_objs = dee_example.event_type2event_objs[event_type] # 由多个event objects组成的list
 
                 event_arg_idxs_objs = []
                 for event_obj in event_objs:
@@ -787,25 +787,30 @@ class DEEFeatureConverter(object):
                     event_arg_idxs = []
                     any_valid_flag = False
                     for field in event_fields:
-                        arg_span = event_obj.field2content[field]
-
-                        if arg_span is None or arg_span not in mspan2span_idx:
-                            # arg_span can be none or valid span is truncated
-                            arg_span_idx = None
+                        
+                        arg_span = event_obj.field2content[field] # qy: 原本是一个argument 1vsm之后会变成一个list
+                        if (not isinstance(arg_span,list)):
+                            arg_span_list = [arg_span]
                         else:
-                            # when constructing data files,
-                            # must ensure event arg span is covered by the total span collections
-                            arg_span_idx = mspan2span_idx[arg_span]
-                            any_valid_flag = True
+                            arg_span_list = arg_span
+                        for arg_span in arg_span_list:
+                            if arg_span is None or arg_span not in mspan2span_idx: # qy: 所有的arguments？ 此处报错
+                                # arg_span can be none or valid span is truncated
+                                arg_span_idx = None
+                            else:
+                                # when constructing data files,
+                                # must ensure event arg span is covered by the total span collections
+                                arg_span_idx = mspan2span_idx[arg_span]
+                                any_valid_flag = True
 
-                        event_arg_idxs.append(arg_span_idx)
+                            event_arg_idxs.append(arg_span_idx)
 
                     if any_valid_flag:
                         event_arg_idxs_objs.append(tuple(event_arg_idxs))
 
                 if event_arg_idxs_objs:
                     event_type_labels.append(1)
-                    event_arg_idxs_objs_list.append(event_arg_idxs_objs)
+                    event_arg_idxs_objs_list.append(event_arg_idxs_objs) # qy: 每个event idx对应其中所有的arguments
                 else:
                     event_type_labels.append(0)
                     event_arg_idxs_objs_list.append(None)

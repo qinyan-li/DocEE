@@ -921,17 +921,22 @@ class DEEArgRelFeatureConverter(object):
                     any_valid_flag = False
                     for field_idx, field in enumerate(event_fields):
                         arg_span = event_obj.field2content[field]
+                        if (not isinstance(arg_span,list)):
+                            arg_span_list = [arg_span]
+                        else:
+                            arg_span_list = arg_span
+                        for arg_span in arg_span_list:
 
-                        if arg_span is not None and arg_span in mspan2span_idx:
-                            # when constructing data files,
-                            # must ensure event arg span is covered by the total span collections
-                            arg_span_idx = mspan2span_idx[arg_span]
-                            any_valid_flag = True
-                            event_arg_idxs.append((arg_span_idx, field_idx))
-                            exist_span_token_tup_set.add(
-                                span_token_ids_list[arg_span_idx]
-                            )
-                            tmp_span_stat.add(span_token_ids_list[arg_span_idx])
+                            if arg_span is not None and arg_span in mspan2span_idx:
+                                # when constructing data files,
+                                # must ensure event arg span is covered by the total span collections
+                                arg_span_idx = mspan2span_idx[arg_span]
+                                any_valid_flag = True
+                                event_arg_idxs.append((arg_span_idx, field_idx))
+                                exist_span_token_tup_set.add(
+                                    span_token_ids_list[arg_span_idx]
+                                )
+                                tmp_span_stat.add(span_token_ids_list[arg_span_idx])
 
                     for token_tup in tmp_span_stat:
                         span2shared_times[token_tup] += 1
