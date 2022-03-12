@@ -50,13 +50,13 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
         # qy: 新加AWA
         if self.config.seq_reduce_type == "AWA":
             self.doc_token_reducer = AttentiveReducer(
-                config.hidden_size, dropout=config.dropout
+                self.hidden_size, dropout=config.dropout
             )
             self.span_token_reducer = AttentiveReducer(
-                config.hidden_size, dropout=config.dropout
+                self.hidden_size, dropout=config.dropout
             )
             self.span_mention_reducer = AttentiveReducer(
-                config.hidden_size, dropout=config.dropout
+                self.hidden_size, dropout=config.dropout
             )
         else:
             assert self.config.seq_reduce_type in {"MaxPooling", "MeanPooling"}
