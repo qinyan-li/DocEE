@@ -200,3 +200,4 @@ scripts/
 Data/
 #zip
 *.zip
+result_truncate.py
