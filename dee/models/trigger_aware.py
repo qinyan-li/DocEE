@@ -22,6 +22,7 @@ from dee.modules import (
     normalize_adj,
     GAT,
     transformer,
+    AttentiveReducer,
 )
 from dee.utils import closest_match, assign_role_from_gold_to_comb
 
@@ -45,6 +46,20 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
                 self.hidden_size = config.hidden_size
         else:
             self.hidden_size = config.hidden_size
+
+        # qy: 新加AWA
+        if self.config.seq_reduce_type == "AWA":
+            self.doc_token_reducer = AttentiveReducer(
+                config.hidden_size, dropout=config.dropout
+            )
+            self.span_token_reducer = AttentiveReducer(
+                config.hidden_size, dropout=config.dropout
+            )
+            self.span_mention_reducer = AttentiveReducer(
+                config.hidden_size, dropout=config.dropout
+            )
+        else:
+            assert self.config.seq_reduce_type in {"MaxPooling", "MeanPooling"}
 
         self.start_lstm = (
             self.end_lstm
@@ -528,9 +543,9 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
             }
         )
         return (
-            self.config.event_cls_loss_weight * event_cls_loss
-            + self.config.combination_loss_weight * sum(arg_combination_loss)
-            + self.config.role_loss_weight * sum(arg_role_loss)
+            self.config.event_cls_loss_weight * event_cls_loss # qy：1.0
+            + self.config.combination_loss_weight * sum(arg_combination_loss) # qy: 1.0
+            + self.config.role_loss_weight * sum(arg_role_loss) # qy: 1.0
         )
 
     def get_eval_on_doc(self, doc_token_emb, doc_sent_emb, doc_fea, doc_arg_rel_info):

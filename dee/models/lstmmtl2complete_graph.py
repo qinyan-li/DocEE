@@ -101,6 +101,7 @@ class LSTMMTL2CompleteGraphModel(nn.Module):
             )
 
         # various attentive reducer
+        ''' qy: 移到了trigger-aware里面
         if self.config.seq_reduce_type == "AWA":
             self.doc_token_reducer = AttentiveReducer(
                 config.hidden_size, dropout=config.dropout
@@ -113,6 +114,7 @@ class LSTMMTL2CompleteGraphModel(nn.Module):
             )
         else:
             assert self.config.seq_reduce_type in {"MaxPooling", "MeanPooling"}
+        '''
 
         self.losses = dict()
 
