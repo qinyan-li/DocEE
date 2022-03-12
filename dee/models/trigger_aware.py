@@ -219,9 +219,10 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
                     sent_idx, char_s:char_e, :
                 ]  # [num_mention_tokens, hidden_size]
                 if self.config.seq_reduce_type == "AWA":
-                    mention_emb = self.span_token_reducer(
-                        mention_token_emb
-                    )  # [hidden_size]
+                    #mention_emb = self.span_token_reducer(
+                    #    mention_token_emb
+                    #)  # [hidden_size]
+                    mention_emb = mention_token_emb.max(dim=0)[0] # qy: 尝试只改后一个AWA 这个token-wise的还是用max pool
                 elif self.config.seq_reduce_type == "MaxPooling": # qy: 目前是max pooling
                     mention_emb = mention_token_emb.max(dim=0)[0]
                 elif self.config.seq_reduce_type == "MeanPooling":
@@ -286,7 +287,7 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
                     mid_s:mid_e
                 ]  # [num_mentions, hidden_size]
 
-                if self.config.span_mention_sum:
+                if self.config.span_mention_sum: # qy: false
                     span_context = multi_ment_emb.sum(0, keepdim=True)
                 else:
                     # span_context.size is [1, hidden_size]
