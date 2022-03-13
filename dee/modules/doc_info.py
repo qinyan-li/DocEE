@@ -8,6 +8,7 @@ def get_span_mention_info(span_dranges_list, doc_token_type_list):
     span_mention_range_list = []
     mention_drange_list = []
     mention_type_list = []
+    print("yesyesyes"+len(span_dranges_list))
     for span_dranges in span_dranges_list:
         ment_idx_s = len(mention_drange_list)
         for drange in span_dranges:
