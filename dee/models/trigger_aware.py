@@ -677,7 +677,7 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
                 span_rep_for_event_instance = torch.stack(
                     span_rep_list_for_event_instance, dim=0
                 )
-                role_preds = event_table.predict_span_role(span_rep_for_event_instance, unique_role=True) # qy: 返回长度为#entities的列表 每个元素是一个list包含这个entity对应的roles
+                role_preds = event_table.predict_span_role(span_rep_for_event_instance, unique_role=self.config.unique_role) # qy: 返回长度为#entities的列表 每个元素是一个list包含这个entity对应的roles
                 """roles random generation (only for debugging)"""
                 # role_preds = [random.randint(0, event_table.num_fields - 1) for _ in range(len(combination))]
                 """end of random roles generation"""
