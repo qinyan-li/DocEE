@@ -210,6 +210,7 @@ class DEETaskSetting(TaskSetting):
         ("use_field_cls_mlp", False),
         ("build_dense_connected_doc_graph", False),
         ("stop_gradient", False),
+        ("unique_role", True)
     ]
 
     def __init__(self, **kwargs):
