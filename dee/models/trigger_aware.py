@@ -226,9 +226,10 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
         get all the mention representations by aggregating the token representations
         """
         if len(doc_arg_rel_info.mention_drange_list) == 0:
-            print("yesyesyes")
+            #print("yesyesyes")
             doc_mention_emb = None
         else:
+            #print("nonono")
             mention_emb_list = []
             for sent_idx, char_s, char_e in doc_arg_rel_info.mention_drange_list:
                 mention_token_emb = doc_token_emb[
@@ -279,7 +280,7 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
         """
         doc_mention_emb = self.get_doc_span_mention_emb(doc_token_emb, doc_arg_rel_info) # qy: 得到每个mention的embedding 由mention的和type的合并 800维
 
-        if self.config.use_mention_lstm: # qy: 再过一层mention lstm
+        if self.config.use_mention_lstm and doc_mention_emb is not None: # qy: 再过一层mention lstm
             # mention further encoding
             doc_mention_emb = self.mention_lstm(doc_mention_emb.unsqueeze(0))[
                 0
