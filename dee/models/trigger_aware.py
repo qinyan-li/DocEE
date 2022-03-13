@@ -226,6 +226,7 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
         get all the mention representations by aggregating the token representations
         """
         if len(doc_arg_rel_info.mention_drange_list) == 0:
+            print("yesyesyes")
             doc_mention_emb = None
         else:
             mention_emb_list = []
