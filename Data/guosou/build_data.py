@@ -531,15 +531,17 @@ if __name__ == "__main__":
 
     build(
         template.event_type2event_class,
-        "submit_test1.json",
-        "luge_submit_without_trigger1.json",
+        "submit_test2.json",
+        "luge_submit_without_trigger2.json",
         inference=True,
     )
+    '''
     build(
         template.event_type2event_class,
         "submit_test2.json",
         "luge_submit_without_trigger2.json",
         inference=True,
     )
+    '''
 
 

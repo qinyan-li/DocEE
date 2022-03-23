@@ -223,6 +223,13 @@ class DEETaskSetting(TaskSetting):
             self.test_file_name = "typed_test.json"
             self.inference_file_name =  "typed_test.json"
             self.doc_lang = "zh"
+        elif self.run_mode == "full_256":
+            self.train_file_name = "typed_train.json"
+            self.dev_file_name = "typed_dev.json"
+            self.test_file_name = "typed_test.json"
+            self.inference_file_name =  "typed_test.json"
+            self.doc_lang = "zh"
+            self.max_seq_len = 256
         elif self.run_mode == "full_short":
             self.train_file_name = "typed_train_short.json"
             self.dev_file_name = "typed_dev_short.json"
@@ -279,7 +286,7 @@ class DEETaskSetting(TaskSetting):
             self.train_file_name = "luge_train_without_trigger.json"
             self.dev_file_name = "luge_dev_without_trigger.json"
             self.test_file_name = "luge_dev_without_trigger.json"
-            self.inference_file_name = "news_submit_without_trigger.json"
+            self.inference_file_name = "luge_submit_without_trigger1.json"
             self.doc_lang = "zh"
         elif self.run_mode == 'ccks2020_without_trigger':
             self.train_file_name = 'ccks2020_train_without_trigger.json'
@@ -1934,6 +1941,7 @@ class DEETask(BasePytorchTask):
                             combi.append(c)
                     nodes = []
                     graph = []
+                    '''
                     for adj_mat in result[4]:
                         for i in range(len(adj_mat)):
                             arg_tmp = self.tokenizer.convert_ids_to_tokens(doc_arg_rel_info.span_token_tup_list[i])
@@ -1972,7 +1980,7 @@ class DEETask(BasePytorchTask):
                                             real_arg1 = arg_tmp1
                                     graph.append((real_arg,real_arg1))
                     #scores = result[6]
-                    
+                    '''
                     doc_res = {
                         "id": doc_id,
                         "event_list": event_list,
@@ -1980,9 +1988,9 @@ class DEETask(BasePytorchTask):
                             "pred_types": event_types,
                             "mspans": mspans,
                             "sentences": example.sentences,
-                            "graph": graph, # new from qy,
-			    "combinations": combi,
-			    "nodes": nodes,
+                            #"graph": graph, # new from qy,
+			    #"combinations": combi,
+			    #"nodes": nodes,
                         },
                     }
                     fout.write(f"{json.dumps(doc_res, ensure_ascii=False)}\n")

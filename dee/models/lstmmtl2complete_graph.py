@@ -400,6 +400,15 @@ class LSTMMTL2CompleteGraphModel(nn.Module):
             return doc_event_cls_loss
         else:
             doc_event_pred_list = doc_event_logps.argmax(dim=-1).tolist()
+            '''
+            #>0.7的eva
+            doc_event_pred_list = []
+            for idx in range(len(doc_event_logps)):
+                if (torch.exp(doc_event_logps[idx][1])>=0.7*(torch.exp(doc_event_logps[idx][1])+torch.exp(doc_event_logps[idx][0]))):
+                    doc_event_pred_list.append(1)
+                else:
+                    doc_event_pred_list.append(0)
+            '''
             return doc_event_pred_list
 
     def get_none_span_context(self, init_tensor):
