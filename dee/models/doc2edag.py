@@ -30,7 +30,7 @@ class Doc2EDAGModel(nn.Module):
         self.event_type_fields_pairs = event_type_fields_pairs
 
         if ner_model is None:
-            self.ner_model = NERModel(config)
+            self.ner_model = NERModel(config) # qy: transformer
         else:
             self.ner_model = ner_model
 
@@ -179,7 +179,7 @@ class Doc2EDAGModel(nn.Module):
                 # Size([1, num_mentions + num_valid_sents, hidden_size])
                 total_ment_sent_emb = torch.cat(
                     [doc_mention_emb, doc_sent_emb], dim=0
-                ).unsqueeze(0)
+                ).unsqueeze(0) # qy: mention和sentence的一起加入transformer
 
                 # size = [num_mentions+num_valid_sents, hidden_size]
                 # here we do not need mask

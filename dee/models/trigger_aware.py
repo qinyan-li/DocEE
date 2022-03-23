@@ -47,7 +47,7 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
         else:
             self.hidden_size = config.hidden_size
 
-        # qy: 新加AWA
+        # qy: 新加AWA 因为要统一hidden_size
         if self.config.seq_reduce_type == "AWA":
             self.doc_token_reducer = AttentiveReducer(
                 self.hidden_size, dropout=config.dropout
@@ -60,7 +60,15 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
             )
         else:
             assert self.config.seq_reduce_type in {"MaxPooling", "MeanPooling"}
-
+        # qy: 新加的transformer层 
+        if self.config.use_doc_enc:
+            # get doc-level context information for every mention and sentence
+            self.doc_context_encoder = transformer.make_transformer_encoder(
+                config.num_tf_layers, # 4
+                config.hidden_size,
+                ff_size=config.ff_size,# 1024
+                dropout=config.dropout,
+            )
         self.start_lstm = (
             self.end_lstm
         ) = self.start_mlp = self.end_mlp = self.biaffine = None
@@ -87,7 +95,7 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
             self.q_w = nn.Linear(self.hidden_size, self.hidden_size)
             self.k_w = nn.Linear(self.hidden_size, self.hidden_size)
 
-        if self.config.use_mention_lstm: # qy: 当前false
+        if self.config.use_mention_lstm: # qy: 当前false，实验里面true了
             self.mention_lstm = nn.LSTM(
                 self.hidden_size, # qy: 800
                 self.hidden_size // 2,
@@ -293,39 +301,85 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
         span_context_list = []
 
         if doc_mention_emb is None:
-            doc_sent_context = doc_sent_emb
+            # qy: 新加transformer
+            if self.config.use_doc_enc:
+                doc_sent_context = self.doc_context_encoder(
+                    doc_sent_emb.unsqueeze(0), None
+                ).squeeze(0)
+            else:
+                doc_sent_context = doc_sent_emb
         else:
             num_mentions = doc_mention_emb.size(0)
+            if self.config.use_doc_enc:
+                # Size([1, num_mentions + num_valid_sents, hidden_size])
+                total_ment_sent_emb = torch.cat(
+                    [doc_mention_emb, doc_sent_emb], dim=0
+                ).unsqueeze(0) # qy: mention和sentence的一起加入transformer
 
-            # collect span context
-            for mid_s, mid_e in doc_arg_rel_info.span_mention_range_list:
-                assert mid_e <= num_mentions
-                multi_ment_emb = doc_mention_emb[
-                    mid_s:mid_e
-                ]  # [num_mentions, hidden_size]
+                # size = [num_mentions+num_valid_sents, hidden_size]
+                # here we do not need mask
+                total_ment_sent_context = self.doc_context_encoder(
+                    total_ment_sent_emb, None
+                ).squeeze(0)
 
-                if self.config.span_mention_sum: # qy: false
-                    span_context = multi_ment_emb.sum(0, keepdim=True)
-                else:
-                    # span_context.size is [1, hidden_size]
+                # collect span context
+                for mid_s, mid_e in doc_arg_rel_info.span_mention_range_list:
+                    assert mid_e <= num_mentions
+                    multi_ment_context = total_ment_sent_context[
+                        mid_s:mid_e
+                    ]  # [num_mentions, hidden_size]
+
+                    # span_context.size [1, hidden_size]
                     if self.config.seq_reduce_type == "AWA":
                         span_context = self.span_mention_reducer(
-                            multi_ment_emb, keepdim=True
+                            multi_ment_context, keepdim=True
                         )
                     elif self.config.seq_reduce_type == "MaxPooling":
-                        span_context = multi_ment_emb.max(dim=0, keepdim=True)[0]
+                        span_context = multi_ment_context.max(dim=0, keepdim=True)[0]
                     elif self.config.seq_reduce_type == "MeanPooling":
-                        span_context = multi_ment_emb.mean(dim=0, keepdim=True)
+                        span_context = multi_ment_context.mean(dim=0, keepdim=True)
                     else:
                         raise Exception(
                             "Unknown seq_reduce_type {}".format(
                                 self.config.seq_reduce_type
                             )
                         )
-                span_context_list.append(span_context)
 
-            # collect sent context
-            doc_sent_context = doc_sent_emb
+                    span_context_list.append(span_context)
+
+                # collect sent context
+                doc_sent_context = total_ment_sent_context[num_mentions:, :]
+            
+            else:
+                # collect span context
+                for mid_s, mid_e in doc_arg_rel_info.span_mention_range_list:
+                    assert mid_e <= num_mentions
+                    multi_ment_emb = doc_mention_emb[
+                        mid_s:mid_e
+                    ]  # [num_mentions, hidden_size]
+
+                    if self.config.span_mention_sum: # qy: false
+                        span_context = multi_ment_emb.sum(0, keepdim=True)
+                    else:
+                        # span_context.size is [1, hidden_size]
+                        if self.config.seq_reduce_type == "AWA":
+                            span_context = self.span_mention_reducer(
+                                multi_ment_emb, keepdim=True
+                            )
+                        elif self.config.seq_reduce_type == "MaxPooling":
+                            span_context = multi_ment_emb.max(dim=0, keepdim=True)[0]
+                        elif self.config.seq_reduce_type == "MeanPooling":
+                            span_context = multi_ment_emb.mean(dim=0, keepdim=True)
+                        else:
+                            raise Exception(
+                                "Unknown seq_reduce_type {}".format(
+                                    self.config.seq_reduce_type
+                                )
+                            )
+                    span_context_list.append(span_context)
+
+                # collect sent context
+                doc_sent_context = doc_sent_emb
 
         return span_context_list, doc_sent_context
 
@@ -430,7 +484,7 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
         # 0. get span representations
         batch_span_context = torch.cat(span_context_list, dim=0)
         lstm_batch_span_context = None
-        if self.config.use_span_lstm:
+        if self.config.use_span_lstm: # qy: 当前true
             # there's no padding in spans, no need to pack rnn sequence
             lstm_batch_span_context = batch_span_context.unsqueeze(0)
             lstm_batch_span_context, (_, _) = self.span_lstm(lstm_batch_span_context)
@@ -469,7 +523,7 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
             event_pred_list = doc_fea.event_type_labels
         else:
             pred_adj_mat = (
-                torch.sigmoid(scores).ge(self.config.biaffine_hard_threshold).long()
+                torch.sigmoid(scores).ge(self.config.biaffine_hard_threshold).long() # qy: 超过threshold的话
             )
             # pred_adj_mat = self.pred_adj_mat_reorgnise(pred_adj_mat)
             pred_adj_mat = pred_adj_mat.detach().cpu().tolist()
@@ -511,7 +565,7 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
                 continue
             gold_combinations = events
             for comb in combs: # qy: 叉乘上所有抽取出来的combinations
-                event_table = self.event_tables[event_idx]
+                event_table = self.event_tables[event_idx] # qy: 属于这个event type的role prediction
                 gold_comb, _ = closest_match(comb, gold_combinations) # qy: 找到最接近的gold combi 通过arguments
                 instance = assign_role_from_gold_to_comb(comb, gold_comb)# qy: 将gold combi的roles赋给当前的combi，允许出现一个entity多个role的，返回的是roles的set
                 span_idxs = []
