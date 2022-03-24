@@ -40,7 +40,7 @@ from dee.modules import (
     LSTMBiaffineNERModel,
     LSTMMaskedCRFNERModel,
 )
-from dee.modules.ner_model import BERTCRFNERModel
+from dee.modules.ner_model import BERTCRFNERModel, NERModel
 from dee.tasks.base_task import TaskSetting, BasePytorchTask
 from dee.models import (
     DCFEEModel,
@@ -118,7 +118,7 @@ class DEETaskSetting(TaskSetting):
         # ablation study parameters,
         ("use_path_mem", True),  # whether to use the memory module when expanding paths
         ("use_scheduled_sampling", True),  # whether to use the scheduled sampling
-        ("use_doc_enc", True),  # whether to use document-level entity encoding
+        ("use_doc_enc", False),  # whether to use document-level entity encoding
         ("neg_field_loss_scaling", 3.0),  # prefer FNs over FPs
         ("gcn_layer", 3),  # prefer FNs over FPs
         ("ner_num_tf_layers", 4),
@@ -210,7 +210,8 @@ class DEETaskSetting(TaskSetting):
         ("use_field_cls_mlp", False),
         ("build_dense_connected_doc_graph", False),
         ("stop_gradient", False),
-        ("unique_role", True)
+        ("unique_role", True),
+        ("use_transformer_ner", False) # 是否使用NERModel即transformer的ner
     ]
 
     def __init__(self, **kwargs):
@@ -414,6 +415,8 @@ class DEETask(BasePytorchTask):
             ner_model = LSTMBiaffineNERModel(self.setting)
         elif self.setting.use_masked_crf:
             ner_model = LSTMMaskedCRFNERModel(self.setting)
+        elif self.setting.use_transformer_ner:
+            ner_model = NERModel(self.setting)
         else:
             ner_model = None
 
