@@ -125,6 +125,10 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
                 for event_type, field_types, _, min_field_num in self.event_type_fields_pairs # qy: 从event_table中来的 （事件类型，角色名，——，每个事件最少需要的角色）
             ]
         )
+        # qy: transformer ner
+        self.sent_pos_encoder = SentencePosEncoder(
+            config.hidden_size, max_sent_num=config.max_sent_num, dropout=config.dropout
+        ) # 768
 
     # def pred_adj_mat_reorgnise(self, pred_adj_mat):
     #     """
