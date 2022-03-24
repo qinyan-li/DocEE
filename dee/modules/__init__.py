@@ -195,7 +195,7 @@ class MentionTypeEncoder(nn.Module):
             )
 
         batch_mention_type_emb = self.embedding(mention_type_ids)
-        out = batch_mention_emb + batch_mention_type_emb
+        out = batch_mention_emb + batch_mention_type_emb # qy: 直接相加
         out = self.dropout(self.layer_norm(out))
 
         return out
@@ -227,7 +227,6 @@ class MentionTypeConcatEncoder(nn.Module): # qy: 当前使用的
 
         self.embedding = nn.Embedding(num_ment_types, hidden_size) # qy: Chfin为26到32
         self.dropout = nn.Dropout(dropout)
-
     def forward(self, batch_mention_emb, mention_type_ids):
         if not isinstance(mention_type_ids, torch.Tensor):
             mention_type_ids = torch.tensor(

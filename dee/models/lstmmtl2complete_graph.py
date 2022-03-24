@@ -241,14 +241,26 @@ class LSTMMTL2CompleteGraphModel(nn.Module):
         if need_label_flag:
             ner_token_labels = torch.cat(ner_token_labels, dim=0)
 
-        # get ner output
-        ner_token_emb, ner_loss, ner_token_preds, ner_sent_emb = self.ner_model(
-            ner_token_ids,
-            ner_token_masks,
-            label_ids=ner_token_labels,
-            train_flag=train_flag,
-            decode_flag=not use_gold_span,
-        )
+        if not self.config.use_transformer_ner:
+            # get ner output
+            ner_token_emb, ner_loss, ner_token_preds, ner_sent_emb = self.ner_model(
+                ner_token_ids,
+                ner_token_masks,
+                label_ids=ner_token_labels,
+                train_flag=train_flag,
+                decode_flag=not use_gold_span,
+            )
+        else:
+            ner_token_emb, ner_loss, ner_token_preds = self.ner_model(
+                ner_token_ids,
+                ner_token_masks,
+                label_ids=ner_token_labels,
+                train_flag=train_flag,
+                decode_flag=not use_gold_span,
+            )
+            ner_sent_emb = self.get_batch_sent_emb(
+                ner_token_emb, ner_token_masks, valid_sent_num_list
+            )
 
         if use_gold_span:  # definitely use gold span info
             ner_token_types = ner_token_labels
@@ -1261,3 +1273,28 @@ class LSTMMTL2CompleteGraphModel(nn.Module):
             ] = field_idx2span_token_tup2dranges
 
         return event_idx2field_idx2span_token_tup2dranges
+
+    # qy: 新增为了transformer的NER的sentence embedding
+    def get_batch_sent_emb(self, ner_token_emb, ner_token_masks, valid_sent_num_list):
+        # From [ner_batch_size, sent_len, hidden_size] to [ner_batch_size, hidden_size]
+        if self.config.seq_reduce_type == "AWA":
+            total_sent_emb = self.doc_token_reducer(
+                ner_token_emb, masks=ner_token_masks
+            )
+        elif self.config.seq_reduce_type == "MaxPooling":
+            total_sent_emb = ner_token_emb.max(dim=1)[0]
+        elif self.config.seq_reduce_type == "MeanPooling":
+            total_sent_emb = ner_token_emb.mean(dim=1)
+        else:
+            raise Exception(
+                "Unknown seq_reduce_type {}".format(self.config.seq_reduce_type)
+            )
+
+        total_sent_pos_ids = []
+        for valid_sent_num in valid_sent_num_list:
+            total_sent_pos_ids += list(range(valid_sent_num))
+        total_sent_emb = self.sent_pos_encoder(
+            total_sent_emb, sent_pos_ids=total_sent_pos_ids
+        )
+
+        return total_sent_emb

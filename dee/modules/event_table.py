@@ -163,8 +163,8 @@ class EventTableForSigmoidMultiArgRel(nn.Module): # qy: 目前是这个
         self.field_types = field_types
         self.num_fields = len(field_types)
         self.min_field_num = min_field_num
-        self.dim_event_query = dim_event_query
-        self.hidden_size = hidden_size
+        self.dim_event_query = dim_event_query # 768
+        self.hidden_size = hidden_size # 800
 
         # for event classification: 0: NA, 1: trigger this event
         self.event_cls = nn.Linear(dim_event_query, 2)
