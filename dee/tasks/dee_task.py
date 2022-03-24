@@ -1941,7 +1941,7 @@ class DEETask(BasePytorchTask):
                             combi.append(c)
                     nodes = []
                     graph = []
-                    '''
+                    
                     for adj_mat in result[4]:
                         for i in range(len(adj_mat)):
                             arg_tmp = self.tokenizer.convert_ids_to_tokens(doc_arg_rel_info.span_token_tup_list[i])
@@ -1980,7 +1980,7 @@ class DEETask(BasePytorchTask):
                                             real_arg1 = arg_tmp1
                                     graph.append((real_arg,real_arg1))
                     #scores = result[6]
-                    '''
+                    
                     doc_res = {
                         "id": doc_id,
                         "event_list": event_list,
@@ -1988,9 +1988,9 @@ class DEETask(BasePytorchTask):
                             "pred_types": event_types,
                             "mspans": mspans,
                             "sentences": example.sentences,
-                            #"graph": graph, # new from qy,
-			    #"combinations": combi,
-			    #"nodes": nodes,
+                            "graph": graph, # new from qy,
+			    "combinations": combi,
+			    "nodes": nodes,
                         },
                     }
                     fout.write(f"{json.dumps(doc_res, ensure_ascii=False)}\n")

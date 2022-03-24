@@ -65,7 +65,7 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
             # get doc-level context information for every mention and sentence
             self.doc_context_encoder = transformer.make_transformer_encoder(
                 config.num_tf_layers, # 4
-                config.hidden_size,
+                self.hidden_size,
                 ff_size=config.ff_size,# 1024
                 dropout=config.dropout,
             )
@@ -287,7 +287,8 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
         and sentence representations
         """
         doc_mention_emb = self.get_doc_span_mention_emb(doc_token_emb, doc_arg_rel_info) # qy: 得到每个mention的embedding 由mention的和type的合并 800维
-
+        #print(doc_mention_emb.size())# qy: debug [23,800]
+        #print("22222")
         if self.config.use_mention_lstm and doc_mention_emb is not None: # qy: 再过一层mention lstm
             # mention further encoding
             doc_mention_emb = self.mention_lstm(doc_mention_emb.unsqueeze(0))[
@@ -321,11 +322,11 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
                 '''
                 # size = [num_mentions+num_valid_sents, hidden_size]
                 # here we do not need mask
-                total_ment_sent_emb = doc_mention_emb.unsqeeze(0) # ?? tbd
+                total_ment_sent_emb = doc_mention_emb.unsqueeze(0) # ?? tbd
                 total_ment_sent_context = self.doc_context_encoder(
                     total_ment_sent_emb, None
                 ).squeeze(0)
-
+                #print(total_ment_sent_context.size())# [23,23,800]
                 # collect span context
                 for mid_s, mid_e in doc_arg_rel_info.span_mention_range_list:
                     assert mid_e <= num_mentions
@@ -490,7 +491,10 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
         lstm_batch_span_context = None
         if self.config.use_span_lstm: # qy: 当前true
             # there's no padding in spans, no need to pack rnn sequence
-            lstm_batch_span_context = batch_span_context.unsqueeze(0)
+            #print(batch_span_context.size()) # [14,23,800]
+            lstm_batch_span_context = batch_span_context.unsqueeze(0) # [1,14,23,800]
+            #print("11111111111")
+            #print(lstm_batch_span_context.size())# qy: debug
             lstm_batch_span_context, (_, _) = self.span_lstm(lstm_batch_span_context)
             lstm_batch_span_context = lstm_batch_span_context.squeeze(0)
 
