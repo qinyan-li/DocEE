@@ -301,23 +301,27 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
         span_context_list = []
 
         if doc_mention_emb is None:
-            # qy: 新加transformer
+            # qy: 新加transformer 但是sentence和mention目前的dim不同 只加在mention上？
+            '''
             if self.config.use_doc_enc:
                 doc_sent_context = self.doc_context_encoder(
                     doc_sent_emb.unsqueeze(0), None
                 ).squeeze(0)
             else:
-                doc_sent_context = doc_sent_emb
+            '''
+            doc_sent_context = doc_sent_emb
         else:
             num_mentions = doc_mention_emb.size(0)
             if self.config.use_doc_enc:
                 # Size([1, num_mentions + num_valid_sents, hidden_size])
+                '''
                 total_ment_sent_emb = torch.cat(
                     [doc_mention_emb, doc_sent_emb], dim=0
                 ).unsqueeze(0) # qy: mention和sentence的一起加入transformer
-
+                '''
                 # size = [num_mentions+num_valid_sents, hidden_size]
                 # here we do not need mask
+                total_ment_sent_emb = doc_mention_emb.unsqeeze(0) # ?? tbd
                 total_ment_sent_context = self.doc_context_encoder(
                     total_ment_sent_emb, None
                 ).squeeze(0)
@@ -348,7 +352,7 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
                     span_context_list.append(span_context)
 
                 # collect sent context
-                doc_sent_context = total_ment_sent_context[num_mentions:, :]
+                doc_sent_context = doc_sent_emb #原来edag为total_ment_sent_context[num_mentions:, :]
             
             else:
                 # collect span context
