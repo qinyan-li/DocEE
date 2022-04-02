@@ -739,7 +739,7 @@ class Doc2EDAGModel(nn.Module):
             else:
                 use_gold_span = False
 
-        # get doc token-level local context
+        # get doc token-level local context # qy: NER
         (
             doc_token_emb_list,
             doc_token_masks_list,

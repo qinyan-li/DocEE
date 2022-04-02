@@ -12,8 +12,8 @@ def get_span_mention_info(span_dranges_list, doc_token_type_list):
     for span_dranges in span_dranges_list:
         ment_idx_s = len(mention_drange_list)
         for drange in span_dranges:
-            mention_drange_list.append(drange)
-            sent_idx, char_s, char_e = drange
+            mention_drange_list.append(drange) # qy: 同一个entity的不同mention的range lists?
+            sent_idx, char_s, char_e = drange # qy: sentence, start, end
             mention_type_list.append(doc_token_type_list[sent_idx][char_s])
         ment_idx_e = len(mention_drange_list)
         #print(mention_drange_list)
@@ -343,14 +343,14 @@ def get_doc_arg_rel_info_list(
 
         # doc_span_info will incorporate all span-level information needed for the event extraction
         doc_arg_rel_info = DocArgRelInfo(
-            span_token_tup_list,
+            span_token_tup_list, # qy: "span_token_tup_list"
             span_token_tup_exist_list,
             span_token_tup_type_list,
             doc_fea.span_token_ids_list,
             span_dranges_list,
             span_mention_range_list,
-            mention_drange_list,
-            mention_type_list,
+            mention_drange_list, #"mention_drange_list",
+            mention_type_list, # "mention_type_list",
             event_arg_rel_mats,
             whole_arg_rel_mat,
             pred_event_arg_idxs_objs_list,

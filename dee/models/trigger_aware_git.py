@@ -6,8 +6,11 @@ from collections import defaultdict
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import dgl
+import dgl.nn.pytorch as dglnn
 from loguru import logger
 
+from dee.models.git import RelGraphConvLayer # import GCN from git
 from dee.models.lstmmtl2complete_graph import LSTMMTL2CompleteGraphModel
 from dee.modules import (
     MLP,
@@ -129,6 +132,36 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
         self.sent_pos_encoder = SentencePosEncoder(
             config.hidden_size, max_sent_num=config.max_sent_num, dropout=config.dropout
         ) # 768
+
+        ############################### from GIT ##########
+        self.rel_name_lists = ["m-m"]#["m-m", "s-m", "s-s"]
+        self.gcn_layers = config.gcn_layer # qy: 3
+        self.GCN_layers = nn.ModuleList(
+            [
+                RelGraphConvLayer(
+                    self.hidden_size, # qy: 改成了self.hidden_size 800 instead of config 768
+                    self.hidden_size,
+                    self.rel_name_lists,
+                    num_bases=len(self.rel_name_lists), # qy: 有几种edge git有3种
+                    activation=nn.ReLU(),
+                    self_loop=True,
+                    dropout=config.dropout,
+                )
+                for i in range(self.gcn_layers)
+            ]
+        )
+        self.middle_layer = nn.Sequential(
+            nn.Linear(config.hidden_size * (config.gcn_layer + 1), config.hidden_size),
+            nn.ReLU(),
+            nn.Dropout(config.dropout),
+        )
+
+        self.sent_embedding = nn.Parameter(torch.randn(self.hidden_size))
+        self.mention_embedding = nn.Parameter(torch.randn(self.hidden_size))
+        self.intra_path_embedding = nn.Parameter(torch.randn(self.hidden_size))
+        self.inter_path_embedding = nn.Parameter(torch.randn(self.hidden_size))
+
+        ##############################################
 
     # def pred_adj_mat_reorgnise(self, pred_adj_mat):
     #     """

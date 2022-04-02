@@ -205,7 +205,7 @@ class GITModel(nn.Module):
             )
 
         self.rel_name_lists = ["m-m", "s-m", "s-s"]
-        self.gcn_layers = config.gcn_layer
+        self.gcn_layers = config.gcn_layer # qy: 3
         self.GCN_layers = nn.ModuleList(
             [
                 RelGraphConvLayer(
@@ -857,7 +857,7 @@ class GITModel(nn.Module):
             else:
                 use_gold_span = False
 
-        # get doc token-level local context
+        # get doc token-level local context # qy: NER
         (
             doc_token_emb_list,
             doc_token_masks_list,
@@ -891,7 +891,7 @@ class GITModel(nn.Module):
 
         graphs = []
         node_features = []
-        for idx, doc_span_info in enumerate(doc_span_info_list):
+        for idx, doc_span_info in enumerate(doc_span_info_list): # qy: 遍历全部mentions?
             # no mention, no records
             if (
                 not train_flag
@@ -924,11 +924,11 @@ class GITModel(nn.Module):
             sent2mention_id = defaultdict(list)
             d = defaultdict(list)
 
-            # 1. sentence-sentence
+            # 1. sentence-sentence #sent×#sent
             node_feature = doc_sent_emb_list[idx]  # sent_num * hidden_size
             node_feature += self.sent_embedding
             sent_num = node_feature.size(0)
-            for i in range(node_feature.size(0)):
+            for i in range(node_feature.size(0)): # qy: #sentences
                 for j in range(node_feature.size(0)):
                     if i != j:
                         d[("node", "s-s", "node")].append((i, j))
@@ -975,7 +975,7 @@ class GITModel(nn.Module):
             node_feature = torch.cat((node_feature, doc_mention_emb), dim=0)
 
             # 3. intra
-            for _, mention_id_list in sent2mention_id.items():
+            for _, mention_id_list in sent2mention_id.items(): # qy: 同一个sent中的mentions
                 for i in range(len(mention_id_list)):
                     for j in range(len(mention_id_list)):
                         if i != j:
@@ -991,7 +991,7 @@ class GITModel(nn.Module):
             # 5. default, when lacking of one of the above four kinds edges
             for rel in self.rel_name_lists:
                 if ("node", rel, "node") not in d:
-                    d[("node", rel, "node")].append((0, 0))
+                    d[("node", rel, "node")].append((0, 0)) # qy:保证每种edge都存在 default 0-0
                     logger.info("add edge: {}".format(rel))
 
             # final
@@ -1022,7 +1022,7 @@ class GITModel(nn.Module):
         for idx, graph in enumerate(graphs):
             sent_num = doc_sent_emb_list[idx].size(0)
             node_num = graphs[idx].number_of_nodes("node")
-            doc_sent_context_list.append(
+            doc_sent_context_list.append( # qy: sentence embeddings
                 node_features_big[cur_idx : cur_idx + sent_num]
             )
 
