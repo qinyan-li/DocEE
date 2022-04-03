@@ -6,8 +6,11 @@ from collections import defaultdict
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import dgl
+import dgl.nn.pytorch as dglnn
 from loguru import logger
 
+from dee.models.git import RelGraphConvLayer # import GCN from git
 from dee.models.lstmmtl2complete_graph import LSTMMTL2CompleteGraphModel
 from dee.modules import (
     MLP,
@@ -129,6 +132,39 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
         self.sent_pos_encoder = SentencePosEncoder(
             config.hidden_size, max_sent_num=config.max_sent_num, dropout=config.dropout
         ) # 768
+        
+        self.use_git = config.use_git
+
+        if config.use_git:
+            ############################### from GIT ##########
+            self.rel_name_lists = ["m-m"]#["m-m", "s-m", "s-s"]
+            self.gcn_layers = config.gcn_layer # qy: 3
+            self.GCN_layers = nn.ModuleList(
+                [
+                    RelGraphConvLayer(
+                        self.hidden_size, # qy: 改成了self.hidden_size 800 instead of config 768
+                        self.hidden_size,
+                        self.rel_name_lists,
+                        num_bases=len(self.rel_name_lists), # qy: 有几种edge git有3种
+                        activation=nn.ReLU(),
+                        self_loop=True,
+                        dropout=config.dropout,
+                    )
+                    for i in range(self.gcn_layers)
+                ]
+            )
+            self.middle_layer = nn.Sequential(
+                nn.Linear(self.hidden_size * (config.gcn_layer + 1), self.hidden_size),
+                nn.ReLU(),
+                nn.Dropout(config.dropout),
+            )
+
+            #self.sent_embedding = nn.Parameter(torch.randn(self.hidden_size))
+            self.mention_embedding = nn.Parameter(torch.randn(self.hidden_size))
+            #self.intra_path_embedding = nn.Parameter(torch.randn(self.hidden_size))
+            #self.inter_path_embedding = nn.Parameter(torch.randn(self.hidden_size))
+
+            ##############################################
 
     # def pred_adj_mat_reorgnise(self, pred_adj_mat):
     #     """
@@ -283,7 +319,7 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
 
         return doc_mention_emb
 
-    def get_doc_span_sent_context(
+    def get_doc_span_sent_context(  # qy: 这里是一个batch的？
         self, doc_token_emb, doc_sent_emb, doc_fea, doc_arg_rel_info
     ):
         """
@@ -293,6 +329,61 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
         doc_mention_emb = self.get_doc_span_mention_emb(doc_token_emb, doc_arg_rel_info) # qy: 得到每个mention的embedding 由mention的和type的合并 800维
         #print(doc_mention_emb.size())# qy: debug [23,800]
         #print("22222")
+            ############## 在此处加入GIT? #############
+        if self.use_git:
+            #graphs = []
+            #node_features = []
+            '''
+            if (
+                    #not train_flag
+                    #and not use_gold_span
+                    #and 
+                    len(doc_arg_rel_info.mention_drange_list) < 1 # qy: 没有提取出mention
+                ):
+                
+                continue
+            '''
+            sent2mention_id = defaultdict(list)
+            d = defaultdict(list)
+            node_feature = doc_sent_emb # qy: git中的sentence node embedding
+            #sent_num = node_feature.size(0) # qy: 我们并不需要
+            for mention_id, (sent_idx, char_s, char_e) in enumerate( # qy: 遍历所有mention 得到第几个句子
+                    doc_arg_rel_info.mention_drange_list
+                ):
+                sent2mention_id[sent_idx].append(mention_id)
+            doc_mention_emb += self.mention_embedding # qy: GCN的部分
+            # qy: node_feature其实就是doc_mention_emb
+
+            # 3. intra
+            for _, mention_id_list in sent2mention_id.items(): # qy: 同一个sent中的mentions
+                for i in range(len(mention_id_list)):
+                    for j in range(len(mention_id_list)):
+                        if i != j:
+                            d[("node", "m-m", "node")].append((i, j))
+            # 4. inter
+            for mention_id_b, mention_id_e in doc_arg_rel_info.span_mention_range_list:
+                for i in range(mention_id_b, mention_id_e):
+                    for j in range(mention_id_b, mention_id_e):
+                        if i != j:
+                            d[("node", "m-m", "node")].append((i, j))
+            # 5. default, when lacking of one of the above four kinds edges
+            for rel in self.rel_name_lists:
+                if ("node", rel, "node") not in d:
+                    d[("node", rel, "node")].append((0, 0)) # qy:保证每种edge都存在 default 0-0
+                    logger.info("add edge: {}".format(rel))
+            graph = dgl.heterograph(d)
+            feature_bank = [doc_mention_emb]
+            for GCN_layer in self.GCN_layers:
+                node_feature = GCN_layer(graph , {"node": node_feature})[
+                    "node"
+                ]
+                feature_bank.append(node_feature)
+            feature_bank = torch.cat(feature_bank, dim=-1)
+            doc_mention_emb = self.middle_layer(feature_bank)
+            ################### end of GIT ##########
+
+
+
         if self.config.use_mention_lstm and doc_mention_emb is not None: # qy: 再过一层mention lstm
             # mention further encoding
             doc_mention_emb = self.mention_lstm(doc_mention_emb.unsqueeze(0))[
