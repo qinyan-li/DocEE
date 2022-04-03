@@ -330,7 +330,7 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
         #print(doc_mention_emb.size())# qy: debug [23,800]
         #print("22222")
             ############## 在此处加入GIT? #############
-        if self.use_git:
+        if (self.use_git and len(doc_arg_rel_info.mention_drange_list)>0):
             #graphs = []
             #node_features = []
             '''
@@ -347,34 +347,40 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
             d = defaultdict(list)
             node_feature = doc_mention_emb #doc_sent_emb # qy: git中的sentence node embedding
             #sent_num = node_feature.size(0) # qy: 我们并不需要
+            ##print(doc_arg_rel_info.mention_drange_list)
             for mention_id, (sent_idx, char_s, char_e) in enumerate( # qy: 遍历所有mention 得到第几个句子
                     doc_arg_rel_info.mention_drange_list
                 ):
                 sent2mention_id[sent_idx].append(mention_id)
             doc_mention_emb += self.mention_embedding # qy: GCN的部分
             # qy: node_feature其实就是doc_mention_emb
-
+            #print("sent2mentionid")
+            #print(sent2mention_id)
             # 3. intra
             for _, mention_id_list in sent2mention_id.items(): # qy: 同一个sent中的mentions
-                for i in range(len(mention_id_list)):
-                    for j in range(len(mention_id_list)):
+                for i in mention_id_list: #range(len(mention_id_list)):
+                    for j in mention_id_list: #range(len(mention_id_list)):
                         if i != j:
                             d[("node", "m-m", "node")].append((i, j))
+            ##print(doc_arg_rel_info.span_mention_range_list)
             # 4. inter
             for mention_id_b, mention_id_e in doc_arg_rel_info.span_mention_range_list:
                 for i in range(mention_id_b, mention_id_e):
                     for j in range(mention_id_b, mention_id_e):
-                        if i != j:
+                        if i != j or i==j:
                             d[("node", "m-m", "node")].append((i, j))
             # 5. default, when lacking of one of the above four kinds edges
+            '''
             for rel in self.rel_name_lists:
                 if ("node", rel, "node") not in d:
                     d[("node", rel, "node")].append((0, 0)) # qy:保证每种edge都存在 default 0-0
                     logger.info("add edge: {}".format(rel))
+            '''
             graph = dgl.heterograph(d)
-            print("0000000")
-            print(d[("node", "m-m", "node")])
-            print(node_feature.shape)
+            graph = graph.to(node_feature.device)
+            #print("0000000")
+            #print(d[("node", "m-m", "node")])
+            #print(node_feature.shape)
             feature_bank = [doc_mention_emb]
             for GCN_layer in self.GCN_layers:
                 node_feature = GCN_layer(graph , {"node": node_feature})[
