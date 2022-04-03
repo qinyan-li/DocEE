@@ -211,7 +211,7 @@ class DEETaskSetting(TaskSetting):
         ("build_dense_connected_doc_graph", False),
         ("stop_gradient", False),
         ("unique_role", True),
-        ("use_transformer_ner", False) # 是否使用NERModel即transformer的ner
+        ("use_transformer_ner", False), # 是否使用NERModel即transformer的ner
         ("use_git", False) # 是否使用git在前面
     ]
 

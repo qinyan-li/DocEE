@@ -345,7 +345,7 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
             '''
             sent2mention_id = defaultdict(list)
             d = defaultdict(list)
-            node_feature = doc_sent_emb # qy: git中的sentence node embedding
+            node_feature = doc_mention_emb #doc_sent_emb # qy: git中的sentence node embedding
             #sent_num = node_feature.size(0) # qy: 我们并不需要
             for mention_id, (sent_idx, char_s, char_e) in enumerate( # qy: 遍历所有mention 得到第几个句子
                     doc_arg_rel_info.mention_drange_list
@@ -372,6 +372,9 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
                     d[("node", rel, "node")].append((0, 0)) # qy:保证每种edge都存在 default 0-0
                     logger.info("add edge: {}".format(rel))
             graph = dgl.heterograph(d)
+            print("0000000")
+            print(d[("node", "m-m", "node")])
+            print(node_feature.shape)
             feature_bank = [doc_mention_emb]
             for GCN_layer in self.GCN_layers:
                 node_feature = GCN_layer(graph , {"node": node_feature})[
