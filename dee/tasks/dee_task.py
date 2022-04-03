@@ -205,7 +205,7 @@ class DEETaskSetting(TaskSetting):
         ("gat_num_heads", 4),
         ("gat_num_layers", 2),
         ("role_by_encoding", False),
-        ("use_mention_lstm", False),
+        ("use_mention_lstm", False), # qy: 在max-pool之前做一个lstm
         ("mlp_before_adj_measure", False),
         ("use_field_cls_mlp", False),
         ("build_dense_connected_doc_graph", False),

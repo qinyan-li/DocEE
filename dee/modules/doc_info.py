@@ -258,7 +258,7 @@ def fix_ent(
 
 
 def get_doc_arg_rel_info_list(
-    doc_token_types_list,
+    doc_token_types_list, # qy: BIO标签
     doc_fea_list,
     event_type_fields_list,
     use_gold_span=False,
@@ -289,7 +289,7 @@ def get_doc_arg_rel_info_list(
                 span_token_tup_list = doc_fea.span_token_ids_list
                 span_dranges_list = doc_fea.span_dranges_list
             else:
-                if ent_fix_mode != "n":
+                if ent_fix_mode != "n": # qy: 目前是n
                     span_token_tup_list, span_dranges_list = fix_ent(
                         span_token_tup_list,
                         span_dranges_list,
