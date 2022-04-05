@@ -631,7 +631,7 @@ class LSTMMTL2CompleteGraphModel(nn.Module):
     ):
         batch_size = len(doc_arg_rel_info_list)
         loss_batch_avg = 1.0 / batch_size
-        lambda_1 = self.config.loss_lambda
+        lambda_1 = self.config.loss_lambda # qy: 0.05
         lambda_2 = 1 - lambda_1
 
         doc_ner_loss_list = []
