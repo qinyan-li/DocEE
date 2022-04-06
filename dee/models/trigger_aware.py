@@ -356,7 +356,7 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
                         d[("node", "s-s", "node")].append((i, j))
             
             # 2. sentence-mention
-            ##print(doc_arg_rel_info.mention_drange_list)
+            #print(doc_arg_rel_info.mention_drange_list)
             for mention_id, (sent_idx, char_s, char_e) in enumerate( # qy: 遍历所有mention 得到第几个句子
                     doc_arg_rel_info.mention_drange_list
                 ):
@@ -376,7 +376,7 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
                 for i in mention_id_list: #range(len(mention_id_list)):
                     for j in mention_id_list: #range(len(mention_id_list)):
                         if i != j:
-                            d[("node", "m-m", "node")].append((i+sent_num, j+sent_num))
+                            d[("node", "m-m", "node")].append((i, j))
             ##print(doc_arg_rel_info.span_mention_range_list)
             # 4. inter
             for mention_id_b, mention_id_e in doc_arg_rel_info.span_mention_range_list:
