@@ -153,7 +153,13 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
                     for i in range(self.gcn_layers)
                 ]
             )
-            self.middle_layer = nn.Sequential(
+            # different middle layers for sentences and mentions
+            self.middle_layer_sent = nn.Sequential(
+                nn.Linear(self.hidden_size * (config.gcn_layer + 1), self.hidden_size),
+                nn.ReLU(),
+                nn.Dropout(config.dropout),
+            )
+            self.middle_layer_ment = nn.Sequential(
                 nn.Linear(self.hidden_size * (config.gcn_layer + 1), self.hidden_size),
                 nn.ReLU(),
                 nn.Dropout(config.dropout),
@@ -396,17 +402,21 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
             #print("0000000")
             #print(d[("node", "m-m", "node")])
             #print(node_feature.shape)
-            feature_bank = [node_feature]
+            feature_bank_sent = [doc_sent_emb]
+            feature_bank_ment = [doc_mention_emb]
             for GCN_layer in self.GCN_layers:
                 node_feature = GCN_layer(graph , {"node": node_feature})[
                     "node"
                 ]
-                feature_bank.append(node_feature)
-            feature_bank = torch.cat(feature_bank, dim=-1)
-            feature_bank = self.middle_layer(feature_bank)
-            doc_sent_emb = feature_bank[:sent_num]
+                feature_bank_sent.append(node_feature[:sent_num])
+                feature_bank_ment.append(node_feature[sent_num:])
+            feature_bank_sent = torch.cat(feature_bank_sent, dim=-1)
+            feature_bank_ment = torch.cat(feature_bank_ment, dim=-1)
+            doc_sent_emb = self.middle_layer_sent(feature_bank_sent)
+            doc_mention_emb = self.middle_layer_ment(feature_bank_ment)
+            #doc_sent_emb = feature_bank[:sent_num]
 
-            doc_mention_emb = feature_bank[sent_num:] # qy: to be debug
+            #doc_mention_emb = feature_bank[sent_num:] # qy: to be debug
             ################### end of GIT ##########
 
 
