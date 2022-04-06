@@ -396,7 +396,7 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
             #print("0000000")
             #print(d[("node", "m-m", "node")])
             #print(node_feature.shape)
-            feature_bank = [doc_mention_emb]
+            feature_bank = [node_feature]
             for GCN_layer in self.GCN_layers:
                 node_feature = GCN_layer(graph , {"node": node_feature})[
                     "node"
