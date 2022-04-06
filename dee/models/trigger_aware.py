@@ -360,9 +360,9 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
             for mention_id, (sent_idx, char_s, char_e) in enumerate( # qy: 遍历所有mention 得到第几个句子
                     doc_arg_rel_info.mention_drange_list
                 ):
-                sent2mention_id[sent_idx].append(mention_id)
-                d[("node", "s-m", "node")].append((mention_id, sent_idx))
-                d[("node", "s-m", "node")].append((sent_idx, mention_id))
+                sent2mention_id[sent_idx].append(mention_id+sent_num)
+                d[("node", "s-m", "node")].append((mention_id+sent_num, sent_idx))
+                d[("node", "s-m", "node")].append((sent_idx, mention_id+sent_num))
 
             doc_mention_emb += self.mention_embedding # qy: 加上一层bias?
             # qy: node_feature其实就是doc_mention_emb
@@ -376,14 +376,14 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
                 for i in mention_id_list: #range(len(mention_id_list)):
                     for j in mention_id_list: #range(len(mention_id_list)):
                         if i != j:
-                            d[("node", "m-m", "node")].append((i, j))
+                            d[("node", "m-m", "node")].append((i+sent_num, j+sent_num))
             ##print(doc_arg_rel_info.span_mention_range_list)
             # 4. inter
             for mention_id_b, mention_id_e in doc_arg_rel_info.span_mention_range_list:
                 for i in range(mention_id_b, mention_id_e):
                     for j in range(mention_id_b, mention_id_e):
                         if i != j: # or i==j:
-                            d[("node", "m-m", "node")].append((i, j))
+                            d[("node", "m-m", "node")].append((i+sent_num, j+sent_num))
             # 5. default, when lacking of one of the above four kinds edges
             '''
             for rel in self.rel_name_lists:
