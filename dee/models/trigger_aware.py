@@ -434,9 +434,10 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
             else:
                 # qy: git中的sentence node embedding
                 #node_feature += self.mention_embedding
-                sent_num = node_feature.size(0) # 句子数量
+                
                 doc_mention_emb += self.mention_embedding # qy: 加上一层bias?
                 node_feature = doc_mention_emb 
+                sent_num = node_feature.size(0) # 句子数量
                 # qy: node_feature其实就是doc_mention_emb
                 #print("sent2mentionid")
                 #print(sent2mention_id)
