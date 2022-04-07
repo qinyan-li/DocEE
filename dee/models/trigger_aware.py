@@ -137,7 +137,11 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
 
         if config.use_git:
             ############################### from GIT ##########
-            self.rel_name_lists =  ["m-m"]#, "s-m", "s-s"]
+            self.full_git = config.full_git
+            if config.full_git:
+                self.rel_name_lists =  ["m-m", "s-m", "s-s"]
+            else:
+                self.rel_name_lists =  ["m-m"]#, "s-m", "s-s"]
             self.gcn_layers = config.gcn_layer # qy: 3
             self.GCN_layers = nn.ModuleList(
                 [
@@ -154,18 +158,25 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
                 ]
             )
             # different middle layers for sentences and mentions
-            self.middle_layer_sent = nn.Sequential(
-                nn.Linear(self.hidden_size * (config.gcn_layer + 1), self.hidden_size),
-                nn.ReLU(),
-                nn.Dropout(config.dropout),
-            )
-            self.middle_layer_ment = nn.Sequential(
-                nn.Linear(self.hidden_size * (config.gcn_layer + 1), self.hidden_size),
-                nn.ReLU(),
-                nn.Dropout(config.dropout),
-            )
-
-            self.sent_embedding = nn.Parameter(torch.randn(self.hidden_size))
+            if config.full_git:
+                self.middle_layer_sent = nn.Sequential(
+                    nn.Linear(self.hidden_size * (config.gcn_layer + 1), self.hidden_size),
+                    nn.ReLU(),
+                    nn.Dropout(config.dropout),
+                )
+                self.middle_layer_ment = nn.Sequential(
+                    nn.Linear(self.hidden_size * (config.gcn_layer + 1), self.hidden_size),
+                    nn.ReLU(),
+                    nn.Dropout(config.dropout),
+                )
+            else:
+                self.middle_layer = nn.Sequential(
+                    nn.Linear(self.hidden_size * (config.gcn_layer + 1), self.hidden_size),
+                    nn.ReLU(),
+                    nn.Dropout(config.dropout),
+                )
+            if config.full_git:
+                self.sent_embedding = nn.Parameter(torch.randn(self.hidden_size))
             self.mention_embedding = nn.Parameter(torch.randn(self.hidden_size))
             #self.intra_path_embedding = nn.Parameter(torch.randn(self.hidden_size))
             #self.inter_path_embedding = nn.Parameter(torch.randn(self.hidden_size))
@@ -353,71 +364,125 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
             d = defaultdict(list)
 
             # 1. sentence-sentence #sent×#sent
-            node_feature = doc_sent_emb # qy: git中的sentence node embedding
-            node_feature += self.sent_embedding
-            sent_num = node_feature.size(0) # 句子数量
-            for i in range(sent_num): # qy: #sentences
-                for j in range(sent_num):
-                    if i != j:
-                        #d[("node", "s-s", "node")].append((i, j))
-                        d[("node","m-m","node")].append((i,j))
-            
-            # 2. sentence-mention
-            #print(doc_arg_rel_info.mention_drange_list)
-            for mention_id, (sent_idx, char_s, char_e) in enumerate( # qy: 遍历所有mention 得到第几个句子
-                    doc_arg_rel_info.mention_drange_list
-                ):
-                sent2mention_id[sent_idx].append(mention_id+sent_num)
-                #d[("node", "s-m", "node")].append((mention_id+sent_num, sent_idx))
-                #d[("node", "s-m", "node")].append((sent_idx, mention_id+sent_num))
-                d[("node", "m-m", "node")].append((mention_id+sent_num, sent_idx))
-                d[("node", "m-m", "node")].append((sent_idx, mention_id+sent_num))
-
-            doc_mention_emb += self.mention_embedding # qy: 加上一层bias?
-            # qy: node_feature其实就是doc_mention_emb
-            #print("sent2mentionid")
-            #print(sent2mention_id)
-            # qy: 合并sent和 mention 的embedding
-            node_feature = torch.cat((node_feature, doc_mention_emb), dim=0)
-
-            # 3. intra
-            for _, mention_id_list in sent2mention_id.items(): # qy: 同一个sent中的mentions
-                for i in mention_id_list: #range(len(mention_id_list)):
-                    for j in mention_id_list: #range(len(mention_id_list)):
+            if self.full_git:
+                
+                doc_sent_emb += self.sent_embedding
+                node_feature = doc_sent_emb # qy: git中的sentence node embedding
+                sent_num = node_feature.size(0) # 句子数量
+                for i in range(sent_num): # qy: #sentences
+                    for j in range(sent_num):
                         if i != j:
-                            d[("node", "m-m", "node")].append((i, j))
-            ##print(doc_arg_rel_info.span_mention_range_list)
-            # 4. inter
-            for mention_id_b, mention_id_e in doc_arg_rel_info.span_mention_range_list:
-                for i in range(mention_id_b, mention_id_e):
-                    for j in range(mention_id_b, mention_id_e):
-                        if i != j: # or i==j:
-                            d[("node", "m-m", "node")].append((i+sent_num, j+sent_num))
-            # 5. default, when lacking of one of the above four kinds edges
-            '''
-            for rel in self.rel_name_lists:
-                if ("node", rel, "node") not in d:
-                    d[("node", rel, "node")].append((0, 0)) # qy:保证每种edge都存在 default 0-0
-                    logger.info("add edge: {}".format(rel))
-            '''
-            graph = dgl.heterograph(d) # qy: graph需要debug 看sent和mention是否是同样的id?
-            graph = graph.to(node_feature.device)
-            #print("0000000")
-            #print(d[("node", "m-m", "node")])
-            #print(node_feature.shape)
-            feature_bank_sent = [doc_sent_emb]
-            feature_bank_ment = [doc_mention_emb]
-            for GCN_layer in self.GCN_layers:
-                node_feature = GCN_layer(graph , {"node": node_feature})[
-                    "node"
-                ]
-                feature_bank_sent.append(node_feature[:sent_num])
-                feature_bank_ment.append(node_feature[sent_num:])
-            feature_bank_sent = torch.cat(feature_bank_sent, dim=-1)
-            feature_bank_ment = torch.cat(feature_bank_ment, dim=-1)
-            doc_sent_emb = self.middle_layer_sent(feature_bank_sent)
-            doc_mention_emb = self.middle_layer_ment(feature_bank_ment)
+                            d[("node", "s-s", "node")].append((i, j))
+                            #d[("node","m-m","node")].append((i,j))
+                
+                # 2. sentence-mention
+                #print(doc_arg_rel_info.mention_drange_list)
+                for mention_id, (sent_idx, char_s, char_e) in enumerate( # qy: 遍历所有mention 得到第几个句子
+                        doc_arg_rel_info.mention_drange_list
+                    ):
+                    sent2mention_id[sent_idx].append(mention_id+sent_num)
+                    d[("node", "s-m", "node")].append((mention_id+sent_num, sent_idx))
+                    d[("node", "s-m", "node")].append((sent_idx, mention_id+sent_num))
+                    #d[("node", "m-m", "node")].append((mention_id+sent_num, sent_idx))
+                    #d[("node", "m-m", "node")].append((sent_idx, mention_id+sent_num))
+
+                doc_mention_emb += self.mention_embedding # qy: 加上一层bias?
+                # qy: node_feature其实就是doc_mention_emb
+                #print("sent2mentionid")
+                #print(sent2mention_id)
+                # qy: 合并sent和 mention 的embedding
+                node_feature = torch.cat((node_feature, doc_mention_emb), dim=0)
+
+                # 3. intra
+                for _, mention_id_list in sent2mention_id.items(): # qy: 同一个sent中的mentions
+                    for i in mention_id_list: #range(len(mention_id_list)):
+                        for j in mention_id_list: #range(len(mention_id_list)):
+                            if i != j:
+                                d[("node", "m-m", "node")].append((i, j))
+                ##print(doc_arg_rel_info.span_mention_range_list)
+                # 4. inter
+                for mention_id_b, mention_id_e in doc_arg_rel_info.span_mention_range_list:
+                    for i in range(mention_id_b, mention_id_e):
+                        for j in range(mention_id_b, mention_id_e):
+                            if i != j: # or i==j:
+                                d[("node", "m-m", "node")].append((i+sent_num, j+sent_num))
+                # 5. default, when lacking of one of the above four kinds edges
+                '''
+                for rel in self.rel_name_lists:
+                    if ("node", rel, "node") not in d:
+                        d[("node", rel, "node")].append((0, 0)) # qy:保证每种edge都存在 default 0-0
+                        logger.info("add edge: {}".format(rel))
+                '''
+                graph = dgl.heterograph(d) # qy: graph需要debug 看sent和mention是否是同样的id?
+                graph = graph.to(node_feature.device)
+                #print("0000000")
+                #print(d[("node", "m-m", "node")])
+                #print(node_feature.shape)
+                feature_bank_sent = [doc_sent_emb]
+                feature_bank_ment = [doc_mention_emb]
+                for GCN_layer in self.GCN_layers:
+                    node_feature = GCN_layer(graph , {"node": node_feature})[
+                        "node"
+                    ]
+                    feature_bank_sent.append(node_feature[:sent_num])
+                    feature_bank_ment.append(node_feature[sent_num:])
+                feature_bank_sent = torch.cat(feature_bank_sent, dim=-1)
+                feature_bank_ment = torch.cat(feature_bank_ment, dim=-1)
+                doc_sent_emb = self.middle_layer_sent(feature_bank_sent)
+                doc_mention_emb = self.middle_layer_ment(feature_bank_ment)
             #doc_sent_emb = feature_bank[:sent_num]
+            else:
+                # qy: git中的sentence node embedding
+                #node_feature += self.mention_embedding
+                sent_num = node_feature.size(0) # 句子数量
+                doc_mention_emb += self.mention_embedding # qy: 加上一层bias?
+                node_feature = doc_mention_emb 
+                # qy: node_feature其实就是doc_mention_emb
+                #print("sent2mentionid")
+                #print(sent2mention_id)
+                # qy: 合并sent和 mention 的embedding
+                # node_feature = torch.cat((node_feature, doc_mention_emb), dim=0)
+                for mention_id, (sent_idx, char_s, char_e) in enumerate( # qy: 遍历所有mention 得到第几个句子
+                        doc_arg_rel_info.mention_drange_list
+                    ):
+                    sent2mention_id[sent_idx].append(mention_id)
+                # 3. intra
+                for _, mention_id_list in sent2mention_id.items(): # qy: 同一个sent中的mentions
+                    for i in mention_id_list: #range(len(mention_id_list)):
+                        for j in mention_id_list: #range(len(mention_id_list)):
+                            if i != j:
+                                d[("node", "m-m", "node")].append((i, j))
+                ##print(doc_arg_rel_info.span_mention_range_list)
+                # 4. inter
+                for mention_id_b, mention_id_e in doc_arg_rel_info.span_mention_range_list:
+                    if mention_id_b+1 == mention_id_e:
+                        d[("node", "m-m", "node")].append((mention_id_b, mention_id_b))
+                    for i in range(mention_id_b, mention_id_e):
+                        for j in range(mention_id_b, mention_id_e):
+                            if i != j:# or i==j:
+                                d[("node", "m-m", "node")].append((i, j))
+                # 5. default, when lacking of one of the above four kinds edges
+                '''
+                for rel in self.rel_name_lists:
+                    if ("node", rel, "node") not in d:
+                        d[("node", rel, "node")].append((0, 0)) # qy:保证每种edge都存在 default 0-0
+                        logger.info("add edge: {}".format(rel))
+                '''
+                graph = dgl.heterograph(d) # qy: graph需要debug 看sent和mention是否是同样的id?
+                graph = graph.to(node_feature.device)
+                #print("0000000")
+                #print(d[("node", "m-m", "node")])
+                #print(node_feature.shape)
+                feature_bank_ment = [doc_mention_emb]
+                for GCN_layer in self.GCN_layers:
+                    node_feature = GCN_layer(graph , {"node": node_feature})[
+                        "node"
+                    ]
+                    feature_bank.append(node_feature)
+                    
+                feature_bank = torch.cat(feature_bank, dim=-1)
+                #doc_sent_emb = self.middle_layer_sent(feature_bank_sent)
+                doc_mention_emb = self.middle_layer(feature_bank)
 
             #doc_mention_emb = feature_bank[sent_num:] # qy: to be debug
             ################### end of GIT ##########
