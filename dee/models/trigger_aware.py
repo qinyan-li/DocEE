@@ -137,7 +137,7 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
 
         if config.use_git:
             ############################### from GIT ##########
-            self.rel_name_lists =  ["m-m", "s-m", "s-s"]
+            self.rel_name_lists =  ["m-m"]#, "s-m", "s-s"]
             self.gcn_layers = config.gcn_layer # qy: 3
             self.GCN_layers = nn.ModuleList(
                 [
@@ -359,7 +359,8 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
             for i in range(sent_num): # qy: #sentences
                 for j in range(sent_num):
                     if i != j:
-                        d[("node", "s-s", "node")].append((i, j))
+                        #d[("node", "s-s", "node")].append((i, j))
+                        d[("node","m-m","node")].append((i,j))
             
             # 2. sentence-mention
             #print(doc_arg_rel_info.mention_drange_list)
@@ -367,8 +368,10 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
                     doc_arg_rel_info.mention_drange_list
                 ):
                 sent2mention_id[sent_idx].append(mention_id+sent_num)
-                d[("node", "s-m", "node")].append((mention_id+sent_num, sent_idx))
-                d[("node", "s-m", "node")].append((sent_idx, mention_id+sent_num))
+                #d[("node", "s-m", "node")].append((mention_id+sent_num, sent_idx))
+                #d[("node", "s-m", "node")].append((sent_idx, mention_id+sent_num))
+                d[("node", "m-m", "node")].append((mention_id+sent_num, sent_idx))
+                d[("node", "m-m", "node")].append((sent_idx, mention_id+sent_num))
 
             doc_mention_emb += self.mention_embedding # qy: 加上一层bias?
             # qy: node_feature其实就是doc_mention_emb
