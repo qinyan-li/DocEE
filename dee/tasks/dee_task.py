@@ -212,7 +212,7 @@ class DEETaskSetting(TaskSetting):
         ("stop_gradient", False),
         ("unique_role", True),
         ("use_transformer_ner", False), # 是否使用NERModel即transformer的ner
-        ("use_git", False) # 是否使用git在前面
+        ("use_git", False), # 是否使用git在前面
         ("full_git", False) # 是否句子+mention的git还是只有mention的git
     ]
 
@@ -307,7 +307,7 @@ class DEETaskSetting(TaskSetting):
             self.train_file_name = 'xunfei_train_without_trigger.json'
             self.dev_file_name = 'xunfei_dev_without_trigger.json'
             self.test_file_name = 'xunfei_submit_without_trigger.json'
-            self.inference_file_name = 'xunfei_submit_without_trigger.json'
+            self.inference_file_name = 'luge_submit_without_trigger1.json'
             self.doc_lang = 'zh'
             
         elif self.run_mode == "zofund_without_trigger":
