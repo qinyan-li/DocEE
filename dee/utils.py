@@ -678,7 +678,7 @@ class RegexEntExtractor(object):
         field2results = defaultdict(list)
         for sent_idx, line in enumerate(doc):
             results = self.extract(line)
-            for field, fr in results.items():
+            for field, fr in results.items(): # qy: filed有四种share ratio money date
                 for match_text, match_span in fr:
                     if match_text not in exclude_ents:
                         field2results[field].append(
