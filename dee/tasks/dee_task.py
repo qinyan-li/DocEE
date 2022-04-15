@@ -263,8 +263,8 @@ class DEETaskSetting(TaskSetting):
             self.train_file_name = "luge_train_without_trigger.json"
             self.dev_file_name = "luge_dev_without_trigger.json"
             self.test_file_name = "luge_dev_without_trigger.json"
-            #self.inference_file_name = "luge_submit_without_trigger.json"
-            self.inference_file_name = "luge_dev_without_trigger.json"
+            self.inference_file_name = "luge_submit_without_trigger.json"
+            #self.inference_file_name = "luge_dev_without_trigger.json"
             self.doc_lang = "zh"
         elif self.run_mode == "luge_without_trigger_short":
             self.train_file_name = "luge_train_without_trigger_short.json"
