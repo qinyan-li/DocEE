@@ -213,7 +213,8 @@ class DEETaskSetting(TaskSetting):
         ("unique_role", True),
         ("use_transformer_ner", False), # 是否使用NERModel即transformer的ner
         ("use_git", False), # 是否使用git在前面
-        ("full_git", False) # 是否句子+mention的git还是只有mention的git
+        ("full_git", False), # 是否句子+mention的git还是只有mention的git
+        ("warmup_proportion", 0.05) # bert的warmup的epoch设置为5
     ]
 
     def __init__(self, **kwargs):
