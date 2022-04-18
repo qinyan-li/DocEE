@@ -266,11 +266,12 @@ class DEETaskSetting(TaskSetting):
             self.inference_file_name = "luge_submit_without_trigger.json"
             #self.inference_file_name = "luge_dev_without_trigger.json"
             self.doc_lang = "zh"
-        elif self.run_mode == "luge_without_trigger_short":
+        elif self.run_mode == "luge_without_trigger_short256":
             self.train_file_name = "luge_train_without_trigger_short.json"
             self.dev_file_name = "luge_dev_without_trigger_short.json"
             self.test_file_name = "luge_dev_without_trigger_short.json"
             self.inference_file_name = "luge_submit_without_trigger_short.json"
+            self.max_seq_len = 256
             #self.inference_file_name = "luge_dev_without_trigger.json"
             self.doc_lang = "zh"
         elif self.run_mode =="luge_without_trigger_multi_role":

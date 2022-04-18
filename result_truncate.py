@@ -1,7 +1,7 @@
 import json
 
 # convert into luge submit format
-with open(r'./luge_p1_submit_new_mlp_git_layer3_0403.json', "r", encoding="utf-8") as f:
+with open(r'./luge_p1_submit_new_mlp_ner0.001_short256_0417.json', "r", encoding="utf-8") as f:
     json_data = []
     for line in f.readlines():
         json_data.append(json.loads(line))
@@ -12,7 +12,7 @@ with open(r'./luge_p1_submit_new_mlp_git_layer3_0403.json', "r", encoding="utf-8
         i.pop("sentences",0)
         list1.append(i)
 
-with open(r'./luge_p1_submit_new_mlp_git_layer3_0403_truncated.json', "w", encoding="UTF-8") as e:
+with open(r'./luge_p1_submit_new_mlp_ner0.001_short256_truncated.json', "w", encoding="UTF-8") as e:
     
     # json_new_data = json.dumps(list1, ensure_ascii=False, indent=4)
     for line in list1:
