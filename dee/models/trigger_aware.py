@@ -188,7 +188,7 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
         if config.dynamic_loss:
             #self.lambda_1 = nn.Parameter(torch.ones(1))
             #self.lambda_2 = nn.Parameter(torch.ones(1))
-            self.lambda_1 = nn.Parameter(torch.tensor([1/self.config.loss_lambda**2]))
+            self.lambda_1 = nn.Parameter(torch.tensor([1/self.config.loss_lambda]))
             #self.lambda_2 = 1. #nn.Parameter(torch.tensor([1.]))
             '''
             else:
