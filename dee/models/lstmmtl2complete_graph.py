@@ -634,7 +634,6 @@ class LSTMMTL2CompleteGraphModel(nn.Module):
         loss_batch_avg = 1.0 / batch_size
         lambda_1 = self.config.loss_lambda # qy: 0.05
         lambda_2 = 1 - lambda_1
-
         doc_ner_loss_list = []
         for doc_sent_loss, doc_span_info in zip(
             doc_sent_loss_list, doc_arg_rel_info_list
@@ -642,9 +641,18 @@ class LSTMMTL2CompleteGraphModel(nn.Module):
             # doc_sent_loss: Size([num_valid_sents])
             doc_ner_loss_list.append(doc_sent_loss.sum())
         self.losses.update({"ner_loss": sum(doc_ner_loss_list)})
-        return loss_batch_avg * (
-            lambda_1 * sum(doc_ner_loss_list) + lambda_2 * sum(doc_event_loss_list)
-        )
+        if not self.dynamic_loss:
+            return loss_batch_avg * (
+                lambda_1 * sum(doc_ner_loss_list) + lambda_2 * sum(doc_event_loss_list)
+            )
+        else:
+            print("loss lambdas")
+            print(self.lambda_1)
+            print(self.lambda_2)
+            return loss_batch_avg * (
+                sum(doc_ner_loss_list)/self.lambda_1**2 + sum(doc_event_loss_list)/self.lambda_2**2 + torch.log(self.lambda_1) + torch.log(self.lambda_2)
+            )
+            
         # return loss_batch_avg * (lambda_2 * sum(doc_event_loss_list))
 
     def get_eval_on_doc(self, doc_token_emb, doc_sent_emb, doc_fea, doc_arg_rel_info):

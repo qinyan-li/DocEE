@@ -28,6 +28,12 @@ class DEEExample(object):
             self.complementary_field2ents = regex_extractor.extract_doc( # qy: 正则匹配
                 detail_align_dict["sentences"]
             )
+            '''
+            return的格式
+            field2results[field].append(
+                [match_text, [sent_idx, match_span[0], match_span[1]]]
+            )
+            '''
         else:
             self.complementary_field2ents = {}
 
@@ -98,7 +104,7 @@ class DEEExample(object):
                         ):
                             detail_align_dict["ann_mspan2dranges"][ent].append(pos_span)
 
-                # OtherType wrong ratio annotation correction
+                # OtherType wrong ratio annotation correction 如果前一位也是数字的话就去掉
                 mspan2fields = copy.deepcopy(detail_align_dict["ann_mspan2guess_field"])
                 mspan2dranges = copy.deepcopy(detail_align_dict["ann_mspan2dranges"])
                 for ent, field in mspan2fields.items():

@@ -247,7 +247,7 @@ class TriggerAwarePrunedCompleteGraphGIT(LSTMMTL2CompleteGraphModel):
             mix_loss = self.get_mix_loss(
                 doc_sent_loss_list, doc_event_loss_list, doc_arg_rel_info_list
             )
-            print(self.losses)
+            
             self.losses.update({"loss": mix_loss})
             # return mix_loss
             return self.losses
