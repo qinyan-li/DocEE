@@ -647,7 +647,7 @@ class LSTMMTL2CompleteGraphModel(nn.Module):
             )
         else:
             print("loss lambdas")
-            print(1/self.lambda_1**2)
+            print(self.lambda_1)
             #print(self.lambda_2**2)
             '''
             return loss_batch_avg * (
