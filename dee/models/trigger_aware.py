@@ -186,8 +186,10 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
             # dynamic loss ###
         self.dynamic_loss = config.dynamic_loss
         if config.dynamic_loss:
-            self.lambda_1 = nn.Parameter(torch.ones(1))
-            self.lambda_2 = nn.Parameter(torch.ones(1))
+            #self.lambda_1 = nn.Parameter(torch.ones(1))
+            #self.lambda_2 = nn.Parameter(torch.ones(1))
+            self.lambda_1 = nn.Parameter(self.config.loss_lambda)
+            self.lambda_2 = nn.Parameter(1-self.config.loss_lambda)
             '''
             else:
                 self.lambda_1 = self.config.loss_lambda # qy: 0.05
