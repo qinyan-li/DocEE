@@ -647,15 +647,15 @@ class LSTMMTL2CompleteGraphModel(nn.Module):
             )
         else:
             print("loss lambdas")
-            print(self.lambda_1)
-            print(self.lambda_2)
+            print(self.lambda_1**2)
+            print(self.lambda_2**2)
             '''
             return loss_batch_avg * (
                 sum(doc_ner_loss_list)/self.lambda_1**2 + sum(doc_event_loss_list)/self.lambda_2**2 + torch.log(self.lambda_1) + torch.log(self.lambda_2)
             )
             '''
             return loss_batch_avg * (
-                self.lambda_1 * sum(doc_ner_loss_list) + self.lambda_2 * sum(doc_event_loss_list)
+                self.lambda_1**2 * sum(doc_ner_loss_list) + self.lambda_2**2 * sum(doc_event_loss_list)
             )
             
         # return loss_batch_avg * (lambda_2 * sum(doc_event_loss_list))
