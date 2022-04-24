@@ -183,6 +183,18 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
 
             ##############################################
 
+            # dynamic loss ###
+            self.dynamic_loss = config.dynamic_loss
+            if config.dynamic_loss:
+                self.lambda_1 = nn.Parameter(torch.ones(1))
+                self.lambda_2 = nn.Parameter(torch.ones(1))
+            '''
+            else:
+                self.lambda_1 = self.config.loss_lambda # qy: 0.05
+                self.lambda_2 = 1 - self.lambda_1
+            '''
+
+
     # def pred_adj_mat_reorgnise(self, pred_adj_mat):
     #     """
     #     fill the diag to 1 and make sure the adj_mat is symmetric

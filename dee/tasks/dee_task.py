@@ -214,7 +214,8 @@ class DEETaskSetting(TaskSetting):
         ("use_transformer_ner", False), # 是否使用NERModel即transformer的ner
         ("use_git", False), # 是否使用git在前面
         ("full_git", False), # 是否句子+mention的git还是只有mention的git
-        ("warmup_proportion", 0.05) # bert的warmup的epoch设置为5
+        ("warmup_proportion", 0.05), # bert的warmup的epoch设置为5
+        ("dynamic_loss", False) # 是否动态训练loss的weight (ner的和其他部分的 共两个参数)
     ]
 
     def __init__(self, **kwargs):
