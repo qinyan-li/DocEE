@@ -751,14 +751,25 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
             )
             # pred_adj_mat = self.pred_adj_mat_reorgnise(pred_adj_mat)
             pred_adj_mat = pred_adj_mat.detach().cpu().tolist()
-            event_pred_list = self.get_event_cls_info(
+            event_pred_list = self.get_event_cls_info( # return [1,0,0,1]
                 doc_sent_context, doc_fea, train_flag=False
             )
-
+        '''
         if self.config.guessing_decode:
             num_triggers = 0
         else:
             num_triggers = self.config.eval_num_triggers
+        '''
+        num_triggers = 1
+        if self.config.dataset == "Duee":
+            # 企业收购 股东增持 股东减持
+            if event_pred_list[4] == 1 or event_pred_list[5] == 1 or event_pred_list[11] == 1:
+                num_triggers = 2
+        else:
+            # 资产冻结
+            if event_pred_list[0] == 1:
+                num_triggers = 2
+
 
         if self.config.incremental_min_conn > -1:
             combs = directed_trigger_graph_incremental_decode(
@@ -902,10 +913,21 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
 
         pred_adj_mat = pred_adj_mat.detach().cpu().tolist()
         final_pred_adj_mat.append(pred_adj_mat)
+        '''
         if self.config.guessing_decode:
             num_triggers = 0
         else:
             num_triggers = self.config.eval_num_triggers
+        '''
+        num_triggers = 1
+        if self.config.dataset == "Duee":
+            # 企业收购 股东增持 股东减持
+            if event_pred_list[4] == 1 or event_pred_list[5] == 1 or event_pred_list[11] == 1:
+                num_triggers = 2
+        else:
+            # 资产冻结
+            if event_pred_list[0] == 1:
+                num_triggers = 2
 
         if self.config.incremental_min_conn > -1:
             raw_combinations = directed_trigger_graph_incremental_decode( 

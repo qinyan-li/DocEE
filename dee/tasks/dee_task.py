@@ -215,7 +215,8 @@ class DEETaskSetting(TaskSetting):
         ("use_git", False), # 是否使用git在前面
         ("full_git", False), # 是否句子+mention的git还是只有mention的git
         ("warmup_proportion", 0.05), # bert的warmup的epoch设置为5
-        ("dynamic_loss", False) # 是否动态训练loss的weight (ner的和其他部分的 共两个参数)
+        ("dynamic_loss", False), # 是否动态训练loss的weight (ner的和其他部分的 共两个参数)
+        ("dataset", "Duee") # 目前跑的是什么数据集 默认为Duee 可设置为ChFin
     ]
 
     def __init__(self, **kwargs):
