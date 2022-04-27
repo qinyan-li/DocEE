@@ -217,7 +217,9 @@ class DEETaskSetting(TaskSetting):
         ("warmup_proportion", 0.05), # bert的warmup的epoch设置为5
         ("dynamic_loss", False), # 是否动态训练loss的weight (ner的和其他部分的 共两个参数)
         ("dataset", "Duee"), # 目前跑的是什么数据集 默认为Duee 可设置为ChFin
-        ("dynamic_num_triggers", False)
+        ("dynamic_num_triggers", False), # 是否需要固定某些event type采用R=2
+        ("strict_dynamic_num_triggers", False) # 是否只有这些event才采用R=2 为false表示只要这些有就R=2
+
     ]
 
     def __init__(self, **kwargs):
