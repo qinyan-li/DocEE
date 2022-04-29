@@ -7,7 +7,7 @@
 
 t="_"
 log=".log"
-model_type="duee"
+model_type="duee_hpt_0.005"
 for dropout in "0.1" "0.2" "0.3"
 do
     for ner_loss in "0.0005" "0.001" "0.0025" "0.005" "0.01" "0.02"
