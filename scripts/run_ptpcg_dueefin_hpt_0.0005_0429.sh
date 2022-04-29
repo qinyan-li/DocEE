@@ -2,17 +2,22 @@
 
 {
     MODEL_NAME='TriggerAwarePrunedCompleteGraph'
-    TASK_NAME='PTPCG_P1-DuEE_fin_MLP_strict_dynamic_r_ner0.001_short256_0427'
+    dropout=$1
+    ner_loss=$2
+    batch_size=$3
+    gas=$4
+    t='_'
+    TASK_NAME='PTPCG_DuEE_hpt_0.005'$t$dropout$t$ner_loss$t$batch_size$t$gas
     echo "('${TASK_NAME}', '${MODEL_NAME}'),    # $(date)" >> RECORDS.md
     echo "Task Name: $TASK_NAME"
     echo "Model Name: $MODEL_NAME"
 
     # GPU_SCOPE="0"
     # REQ_GPU_NUM=1
-    GPUS="2"
+    GPUS="0"
     # GPUS=$(python wait.py --task_name="$TASK_NAME" --cuda=$GPU_SCOPE --wait="schedule" --req_gpu_num=$REQ_GPU_NUM)
     echo "GPUS: $GPUS"
-    EPOCH_NUM=100
+    EPOCH_NUM=10
 
     if [[ -z "$GPUS" ]]; then
         echo "GPUS is empty, stop..."
@@ -35,16 +40,16 @@
             --remove_last_cpt=True \
             --optimizer='adam' \
             --learning_rate=0.0005 \
-            --dropout=0.1 \
-            --gradient_accumulation_steps=8 \
-            --train_batch_size=64 \
+            --dropout=${dropout} \
+            --gradient_accumulation_steps=${gas} \
+            --train_batch_size=$batch_size \
             --eval_batch_size=16 \
             --max_clique_decode=True \
             --num_triggers=1 \
             --eval_num_triggers=1 \
             --with_left_trigger=True \
             --directed_trigger_graph=True \
-	    --use_scheduled_sampling=True \
+	        --use_scheduled_sampling=True \
             --schedule_epoch_start=10 \
             --schedule_epoch_length=10 \
             --num_train_epochs=${EPOCH_NUM} \
@@ -56,7 +61,6 @@
             --load_inference=False \
             --inference_epoch=2 \
             --run_inference=False \
-            --inference_dump_filepath='luge_p1_submit_new_mlp_strict_dynamic_r_ner0.001_short256_0427.json' \
             --re_eval_flag=False \
             --add_greedy_dec=False \
             --num_lstm_layers=2 \
@@ -73,12 +77,13 @@
             --ment_feature_type='concat' \
             --ment_type_hidden_size=32 \
             --mlp_before_adj_measure=True \
-            --loss_lambda=0.001 \
+            --loss_lambda=${ner_loss} \
             --max_sent_len=256  \
             --dynamic_num_triggers=True \
             --dataset="Duee" \
-            --strict_dynamic_num_triggers=True
+            --strict_dynamic_num_triggers=False
         # run on inference dataset
+        :'
         CUDA_VISIBLE_DEVICES=${GPUS} python -u run_dee_task.py \
             --data_dir='Data/DuEEData' \
             --task_name=${TASK_NAME} \
@@ -95,6 +100,7 @@
             --run_inference=True \
             --inference_dump_filepath='luge_p1_submit_new_mlp_strict_dynamic_r_ner0.001_short256_0427.json' \
             --add_greedy_dec=False
+            '
     fi
 
     # check if the process has finished normally
