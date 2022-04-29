@@ -7,7 +7,7 @@
     batch_size=$3
     gas=$4
     t='_'
-    TASK_NAME='PTPCG_DuEE_hpt_0.005'$t$dropout$t$ner_loss$t$batch_size$t$gas
+    TASK_NAME='PTPCG_DuEE_hpt_0.005$t$dropout$t$ner_loss$t$batch_size$t$gas'
     echo "('${TASK_NAME}', '${MODEL_NAME}'),    # $(date)" >> RECORDS.md
     echo "Task Name: $TASK_NAME"
     echo "Model Name: $MODEL_NAME"

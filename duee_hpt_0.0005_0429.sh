@@ -18,6 +18,7 @@ do
             do
                 log_version=$model_type$t$dropout$t$ner_loss$t$batch_size$t$gas$log
                 log_path=./Logs/${log_version}
+                echo "task name: ${log_version}"
                 nohup sh ./scripts/run_ptpcg_dueefin_hpt_0.0005_0429.sh ${dropout} ${ner_loss} ${batch_size} ${gas} > ${log_path} 2>&1 &
                 wait
             done
