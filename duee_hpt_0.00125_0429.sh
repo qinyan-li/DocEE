@@ -7,7 +7,7 @@
 
 t="_"
 log=".log"
-model_type="duee"
+model_type="duee_hpt_lr0.00125"
 for dropout in "0.1" "0.2" "0.3"
 do
     for ner_loss in "0.0005" "0.001" "0.0025" "0.005" "0.01" "0.02"
@@ -18,8 +18,9 @@ do
             do
                 log_version=$model_type$t$dropout$t$ner_loss$t$batch_size$t$gas$log
                 log_path=./Logs/${log_version}
+                echo "task name: ${log_version}"
                 nohup sh ./scripts/run_ptpcg_dueefin_hpt_0.00125_0429.sh ${dropout} ${ner_loss} ${batch_size} ${gas} > ${log_path} 2>&1 &
-                wait
+                wait $!
             done
             wait
         done
