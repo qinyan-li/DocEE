@@ -93,7 +93,7 @@ class BertForBasicNER(BertPreTrainedModel):
         return batch_seq_enc, ner_loss, batch_seq_preds
 
 
-class BERTCRFNERModel(nn.Module):
+class BERTCRFNERModel(nn.Module): # qy: use_bert 的时候用这个
     def __init__(self, config):
         super().__init__()
 
