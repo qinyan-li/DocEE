@@ -763,8 +763,8 @@ class TriggerAwarePrunedCompleteGraph(LSTMMTL2CompleteGraphModel):
         else:
             num_triggers = 1
             if self.config.dataset == "Duee":
-                # 企业收购 股东增持 股东减持
-                if event_pred_list[4] == 1 or event_pred_list[5] == 1 or event_pred_list[11] == 1:
+                # no企业收购 股东增持 股东减持
+                if event_pred_list[11] == 1 or event_pred_list[5] == 1: #or event_pred_list[4] == 1:
                     num_triggers = 2
                 if self.config.strict_dynamic_num_triggers:  
                     x = [v for i,v in enumerate(event_pred_list) if i not in frozenset((4,5,11))] 
