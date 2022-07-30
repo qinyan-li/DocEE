@@ -1,3 +1,18 @@
+# lqy 自己的DUEE跑的流程
+1. 在duee_hpt_bert_complete_0515.sh中 最好的参数是第一组
+2. 其会调用script/run_ptpcg_dueefin_hpt_bert_complete_0508.sh 如果需要inference的话就把最下面的uncomment掉
+3. 产出的dump file 先用result_truncate.py简化结果（去掉无用的部分）
+4. 在本地之后跑：百度后处理 去掉trigger为空的-只有质押.ipynb 进行后处理 （在Master Thesis NLP/DocEE/Results中）
+
+调用的是这三个数据集xxx_short.json 在/Data/DuEEData里面
+ 
+这三个是由build_data_short.py生成的
+
+用的模型是/dee/models/trigger_aware.py 
+
+
+
+
 # ❤️ A Toolkit for Document-level Event Extraction with & without Triggers
 
 ![Build](https://github.com/Spico197/DocEE/workflows/DocEE/badge.svg?branch=main)
